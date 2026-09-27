@@ -23,6 +23,7 @@ test('drags a piece without losing its grab point', async ({ page }) => {
   await page.mouse.down()
   await page.waitForTimeout(220)
   await expect(page.locator('.drag-overlay')).toBeVisible()
+  await expect(line).toHaveCSS('opacity', '0')
   await page.mouse.move(boardBox.x + cell / 2, boardBox.y + cell * 2, { steps: 8 })
   await page.mouse.up()
 

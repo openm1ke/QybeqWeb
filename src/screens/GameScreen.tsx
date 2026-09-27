@@ -246,7 +246,7 @@ export function GameScreen({ theme, onBack }: { theme: ThemePreset; onBack: () =
               return (
                 <button
                   type="button"
-                  className={`tray-piece${selected === piece.id ? ' selected' : ''}`}
+                  className={`tray-piece${selected === piece.id ? ' selected' : ''}${drag?.pieceId === piece.id ? ' dragging-source' : ''}`}
                   key={piece.id}
                   onClick={() => {
                     if (Date.now() < suppressClickUntil.current) {
