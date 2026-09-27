@@ -5,8 +5,9 @@ import { gameAudio } from '../audio/audioService'
 import { PieceSvg } from '../components/PieceSvg'
 import { themeStyle, type ThemePreset } from '../cosmetics/themes'
 import type { AppCopy } from '../i18n/translations'
-import { applyReferenceSolution, flipPiece, initialSnapshot, isSolved, orientationOf, placePiece, removePiece, rotatePiece } from '../game/controller'
+import { flipPiece, initialSnapshot, isSolved, orientationOf, placePiece, removePiece, rotatePiece } from '../game/controller'
 import { cellKey, cellLabel } from '../game/cells'
+import { nextPlacementHint, placementMatches, type PlacementHint } from '../game/hints'
 import { sampleLevel } from '../game/pieces'
 import { shapeBounds, transformCells } from '../game/transforms'
 import type { Cell, GameSnapshot } from '../game/types'
@@ -58,6 +59,9 @@ export function GameScreen({ theme, text, source, onComplete, onBack }: { theme:
   const [selected, setSelected] = useState(sampleLevel.pieces[0].id)
   const [drag, setDrag] = useState<DragState | null>(null)
   const [turnAnimation, setTurnAnimation] = useState({ pieceId: '', nonce: 0 })
+  const [hint, setHint] = useState<PlacementHint | null>(null)
+  const [hintsRemaining, setHintsRemaining] = useState(3)
+  const [hintPulse, setHintPulse] = useState(0)
   const boardRef = useRef<HTMLDivElement>(null)
   const overlayRef = useRef<HTMLDivElement>(null)
   const nextPoint = useRef({ x: 0, y: 0 })
@@ -73,6 +77,10 @@ export function GameScreen({ theme, text, source, onComplete, onBack }: { theme:
   const solved = isSolved(snapshot)
   const blocked = useMemo(() => new Map(sampleLevel.blockedCells.map((cell) => [cellKey(cell), cell])), [])
   const selectedPiece = sampleLevel.pieces.find((piece) => piece.id === selected) ?? sampleLevel.pieces[0]
+  const activeHint = hint && !placementMatches(snapshot.placements[hint.pieceId], hint.target) ? hint : null
+  const hintedPiece = activeHint ? sampleLevel.pieces.find((piece) => piece.id === activeHint.pieceId) : null
+  const hintedShape = activeHint && hintedPiece ? transformCells(hintedPiece.cells, activeHint.target.orientation) : null
+  const hintedBounds = hintedShape ? shapeBounds(hintedShape) : null
 
   const finishRoll = useCallback((skipped = false) => {
     if (rollFinished.current) return
@@ -114,6 +122,26 @@ export function GameScreen({ theme, text, source, onComplete, onBack }: { theme:
   useEffect(() => () => {
     if (pendingTrayPress.current) window.clearTimeout(pendingTrayPress.current.timer)
   }, [])
+
+  const requestHint = () => {
+    if (phase !== 'play' || solved) return
+    if (activeHint) {
+      setSelected(activeHint.pieceId)
+      setHintPulse((value) => value + 1)
+      gameAudio.playEffect('turn')
+      return
+    }
+    if (hintsRemaining <= 0) return
+    const next = nextPlacementHint(snapshot)
+    if (!next) return
+    assistanceUsed.current = true
+    setHint(next)
+    setHintsRemaining((value) => Math.max(0, value - 1))
+    setSelected(next.pieceId)
+    setHintPulse((value) => value + 1)
+    gameAudio.playEffect('turn')
+    trackGoal('hint_shown', { level_id: sampleLevel.id, source, piece_id: next.pieceId, kind: next.kind, hints_remaining: hintsRemaining - 1 })
+  }
 
   const positionOverlay = useCallback((current: DragState, x: number, y: number) => {
     const board = boardRef.current?.getBoundingClientRect()
@@ -287,7 +315,7 @@ export function GameScreen({ theme, text, source, onComplete, onBack }: { theme:
                 return (
                   <button
                     type="button"
-                    className={`board-piece${selected === placement.pieceId ? ' selected' : ''}${drag?.pieceId === placement.pieceId ? ' dragging-source' : ''}`}
+                    className={`board-piece${selected === placement.pieceId ? ' selected' : ''}${drag?.pieceId === placement.pieceId ? ' dragging-source' : ''}${activeHint?.kind === 'relocate' && activeHint.pieceId === placement.pieceId ? ' hint-source' : ''}`}
                     key={placement.pieceId}
                     style={{ left: `${placement.origin.col / 6 * 100}%`, top: `${placement.origin.row / 6 * 100}%`, width: `${bounds.cols / 6 * 100}%`, height: `${bounds.rows / 6 * 100}%` }}
                     onPointerDown={(event) => beginBoardDrag(placement.pieceId, event)}
@@ -296,6 +324,12 @@ export function GameScreen({ theme, text, source, onComplete, onBack }: { theme:
                   ><PieceSvg cells={cells} color={theme.pieceColors[placement.pieceId]} material={theme.material} /></button>
                 )
               })}
+              {activeHint && hintedPiece && hintedShape && hintedBounds && <div
+                key={`${activeHint.pieceId}:${hintPulse}`}
+                className="hint-target"
+                aria-hidden="true"
+                style={{ left: `${activeHint.target.origin.col / 6 * 100}%`, top: `${activeHint.target.origin.row / 6 * 100}%`, width: `${hintedBounds.cols / 6 * 100}%`, height: `${hintedBounds.rows / 6 * 100}%` }}
+              ><PieceSvg cells={hintedShape} color={theme.pieceColors[activeHint.pieceId]} material={theme.material} /></div>}
             </div>
             {phase === 'rolling' && <button className="dice-roll-layer" type="button" onClick={() => finishRoll(true)} aria-label={`${text.rollingDice} ${text.tapToSkip}`}>
               {sampleLevel.blockedCells.map((cell, index) => {
@@ -317,7 +351,10 @@ export function GameScreen({ theme, text, source, onComplete, onBack }: { theme:
               })}
             </button>}
           </div>
-          <div className="progress-row"><span>{text.placed(Object.keys(snapshot.placements).length)}</span><button type="button" className="hint-button">♢ <b>3</b></button></div>
+          <div className="progress-row"><span>{text.placed(Object.keys(snapshot.placements).length)}</span><button type="button" className={`hint-button${activeHint ? ' active' : ''}`} disabled={phase !== 'play' || solved || (!activeHint && hintsRemaining <= 0)} onClick={requestHint} aria-label={text.hintsLeft(hintsRemaining)}>♢ <b>{hintsRemaining}</b></button></div>
+          {activeHint && hintedPiece && <p className="hint-caption" role="status">{activeHint.kind === 'place'
+            ? text.hintPlace(text.pieceName(hintedPiece.id, hintedPiece.name), cellLabel(activeHint.target.origin))
+            : text.hintRelocate(text.pieceName(hintedPiece.id, hintedPiece.name), cellLabel(activeHint.target.origin))}</p>}
         </div>
 
         {phase === 'rolling' ? <aside className="tray-panel roll-status-panel" aria-live="polite">
@@ -365,8 +402,7 @@ export function GameScreen({ theme, text, source, onComplete, onBack }: { theme:
             })}
           </div>
           <div className="debug-actions">
-            <button type="button" onClick={() => setSnapshot(initialSnapshot(sampleLevel))}>{text.reset}</button>
-            <button type="button" onClick={() => { assistanceUsed.current = true; setSnapshot((current) => applyReferenceSolution(current)) }}>{text.previewSolution}</button>
+            <button type="button" onClick={() => { setHint(null); setSnapshot(initialSnapshot(sampleLevel)) }}>{text.reset}</button>
           </div>
         </aside>}
       </section>

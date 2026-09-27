@@ -83,6 +83,25 @@ test('rotates a tray piece clockwise on click', async ({ page }) => {
   expect(trayAfter?.height).toBe(trayBefore?.height)
 })
 
+test('shows one non-destructive hint and has no solution shortcut', async ({ page }) => {
+  await page.goto('./')
+  await page.getByRole('button', { name: /new puzzle/i }).click()
+  await page.getByRole('button', { name: /rolling coordinate dice/i }).click()
+
+  await expect(page.getByRole('button', { name: /preview solution/i })).toHaveCount(0)
+  const hintButton = page.getByRole('button', { name: /3 hints left/i })
+  await hintButton.click()
+
+  await expect(page.locator('.hint-target')).toBeVisible()
+  await expect(page.getByRole('status')).toHaveText(/place line at a1/i)
+  await expect(page.getByRole('button', { name: /2 hints left/i })).toBeVisible()
+  await expect(page.locator('.board-piece')).toHaveCount(0)
+  await expect(page.getByRole('dialog', { name: /puzzle complete/i })).toHaveCount(0)
+
+  await page.getByRole('button', { name: /2 hints left/i }).click()
+  await expect(page.getByRole('button', { name: /2 hints left/i })).toBeVisible()
+})
+
 test('persists a selected visual theme', async ({ page }) => {
   await page.goto('./')
   await page.evaluate(() => localStorage.setItem('qybeq.progress.v1', JSON.stringify({ availableStars: 12, solvedPuzzleCount: 4, unlockedThemeIds: ['classic'], dailyBestStars: {} })))
