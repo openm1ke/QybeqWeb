@@ -1,0 +1,30 @@
+{
+  "schema": 1,
+  "boardSize": 6,
+  "blockedCells": ["A6", "B2", "C5", "D3", "E2", "F4"],
+  "pieceAreas": {
+    "line4": 4,
+    "elbow4": 4,
+    "tee": 4,
+    "square": 4,
+    "zigzag": 4,
+    "flare": 5,
+    "elbow3": 3,
+    "domino": 2
+  },
+  "referenceSolution": [
+    { "pieceId": "line4", "origin": "A1", "quarterTurns": 1 },
+    { "pieceId": "tee", "origin": "A4", "quarterTurns": 2 },
+    { "pieceId": "elbow4", "origin": "B1", "quarterTurns": 0 },
+    { "pieceId": "flare", "origin": "B2", "quarterTurns": 1 },
+    { "pieceId": "elbow3", "origin": "C5", "quarterTurns": 3 },
+    { "pieceId": "domino", "origin": "E1", "quarterTurns": 1 },
+    { "pieceId": "zigzag", "origin": "E2", "quarterTurns": 0 },
+    { "pieceId": "square", "origin": "E5", "quarterTurns": 0 }
+  ],
+  "rewardCases": [
+    { "elapsedMs": 60000, "assistanceUsed": false, "stars": 3 },
+    { "elapsedMs": 60001, "assistanceUsed": false, "stars": 2 },
+    { "elapsedMs": 12000, "assistanceUsed": true, "stars": 1 }
+  ]
+}
