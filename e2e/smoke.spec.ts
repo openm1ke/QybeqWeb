@@ -19,11 +19,16 @@ test('drags a piece without losing its grab point', async ({ page }) => {
   if (!lineBox || !boardBox) throw new Error('Game geometry is unavailable')
   const cell = boardBox.width / 6
 
-  await page.mouse.move(lineBox.x + lineBox.width / 2, lineBox.y + lineBox.height / 2)
+  const grabPoint = { x: lineBox.x + lineBox.width / 2, y: lineBox.y + lineBox.height * .15 }
+  await page.mouse.move(grabPoint.x, grabPoint.y)
   await page.mouse.down()
   await page.waitForTimeout(220)
   await expect(page.locator('.drag-overlay')).toBeVisible()
   await expect(line).toHaveCSS('opacity', '0')
+  const overlayBox = await page.locator('.drag-overlay').boundingBox()
+  if (!overlayBox) throw new Error('Drag overlay geometry is unavailable')
+  expect(Math.abs(overlayBox.x + overlayBox.width / 2 - grabPoint.x)).toBeLessThan(2)
+  expect(Math.abs(overlayBox.y + overlayBox.height / 2 - grabPoint.y)).toBeLessThan(2)
   await page.mouse.move(boardBox.x + cell / 2, boardBox.y + cell * 2, { steps: 8 })
   await page.mouse.up()
 

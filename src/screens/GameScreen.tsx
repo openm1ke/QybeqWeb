@@ -68,11 +68,11 @@ export function GameScreen({ theme, onBack }: { theme: ThemePreset; onBack: () =
     node.style.transform = `translate3d(${left}px, ${top}px, 0)`
   }, [snapshot])
 
-  const startDrag = useCallback((pieceId: string, clientX: number, clientY: number, rect: DOMRect) => {
+  const startDrag = useCallback((pieceId: string, clientX: number, clientY: number, rect: DOMRect, centerOnPointer = false) => {
     const current = {
       pieceId,
-      grabXRatio: Math.max(0, Math.min(1, (clientX - rect.left) / rect.width)),
-      grabYRatio: Math.max(0, Math.min(1, (clientY - rect.top) / rect.height)),
+      grabXRatio: centerOnPointer ? .5 : Math.max(0, Math.min(1, (clientX - rect.left) / rect.width)),
+      grabYRatio: centerOnPointer ? .5 : Math.max(0, Math.min(1, (clientY - rect.top) / rect.height)),
       clientX,
       clientY,
     }
@@ -108,7 +108,7 @@ export function GameScreen({ theme, onBack }: { theme: ThemePreset; onBack: () =
       if (pendingTrayPress.current !== press) return
       press.started = true
       suppressClickUntil.current = Date.now() + 650
-      startDrag(press.pieceId, press.clientX, press.clientY, press.rect)
+      startDrag(press.pieceId, press.clientX, press.clientY, press.rect, true)
     }, 190)
     pendingTrayPress.current = press
   }
