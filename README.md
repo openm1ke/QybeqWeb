@@ -7,8 +7,10 @@ application with React, TypeScript, Vite and SVG.
 
 - responsive main menu and playable 6×6 prototype board;
 - all eight canonical polyomino pieces;
-- pointer-based drag that preserves the exact grab position;
+- tap-to-rotate and hold-to-drag controls that preserve the exact grab position;
 - rotate, flip, move, remove and collision validation;
+- five persisted visual themes ported from mobile;
+- three-track background playlist, volume controls and gameplay effects;
 - exact-cover solver and validated mobile reference solution;
 - stable daily PRNG and one/two/three-star rules;
 - shared versioned JSON parity fixture;

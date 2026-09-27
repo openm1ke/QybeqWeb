@@ -1,25 +1,13 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent } from 'react'
 import { createPortal } from 'react-dom'
+import { gameAudio } from '../audio/audioService'
 import { PieceSvg } from '../components/PieceSvg'
-import {
-  applyReferenceSolution,
-  flipPiece,
-  initialSnapshot,
-  isSolved,
-  orientationOf,
-  placePiece,
-  removePiece,
-  rotatePiece,
-} from '../game/controller'
+import { themeStyle, type ThemePreset } from '../cosmetics/themes'
+import { applyReferenceSolution, flipPiece, initialSnapshot, isSolved, orientationOf, placePiece, removePiece, rotatePiece } from '../game/controller'
 import { cellKey, cellLabel } from '../game/cells'
 import { sampleLevel } from '../game/pieces'
 import { shapeBounds, transformCells } from '../game/transforms'
 import type { Cell, GameSnapshot } from '../game/types'
-
-const colors: Record<string, string> = {
-  line4: '#38c9d4', elbow4: '#56cf95', tee: '#78a8f5', square: '#f4c735',
-  zigzag: '#e95692', flare: '#9d71dd', elbow3: '#f28a4b', domino: '#9bc841',
-}
 
 interface DragState {
   pieceId: string
@@ -29,7 +17,17 @@ interface DragState {
   clientY: number
 }
 
-export function GameScreen({ onBack }: { onBack: () => void }) {
+interface PendingTrayPress {
+  pieceId: string
+  pointerId: number
+  clientX: number
+  clientY: number
+  rect: DOMRect
+  timer: number
+  started: boolean
+}
+
+export function GameScreen({ theme, onBack }: { theme: ThemePreset; onBack: () => void }) {
   const [snapshot, setSnapshot] = useState<GameSnapshot>(() => initialSnapshot(sampleLevel))
   const [selected, setSelected] = useState(sampleLevel.pieces[0].id)
   const [drag, setDrag] = useState<DragState | null>(null)
@@ -37,9 +35,21 @@ export function GameScreen({ onBack }: { onBack: () => void }) {
   const overlayRef = useRef<HTMLDivElement>(null)
   const nextPoint = useRef({ x: 0, y: 0 })
   const animationFrame = useRef<number | null>(null)
+  const pendingTrayPress = useRef<PendingTrayPress | null>(null)
+  const suppressClickUntil = useRef(0)
+  const solvedBefore = useRef(false)
   const solved = isSolved(snapshot)
   const blocked = useMemo(() => new Map(sampleLevel.blockedCells.map((cell) => [cellKey(cell), cell])), [])
   const selectedPiece = sampleLevel.pieces.find((piece) => piece.id === selected) ?? sampleLevel.pieces[0]
+
+  useEffect(() => {
+    if (solved && !solvedBefore.current) gameAudio.playEffect('complete')
+    solvedBefore.current = solved
+  }, [solved])
+
+  useEffect(() => () => {
+    if (pendingTrayPress.current) window.clearTimeout(pendingTrayPress.current.timer)
+  }, [])
 
   const positionOverlay = useCallback((current: DragState, x: number, y: number) => {
     const board = boardRef.current?.getBoundingClientRect()
@@ -57,21 +67,63 @@ export function GameScreen({ onBack }: { onBack: () => void }) {
     node.style.transform = `translate3d(${left}px, ${top}px, 0)`
   }, [snapshot])
 
-  const beginDrag = (pieceId: string, event: ReactPointerEvent<HTMLElement>) => {
+  const startDrag = useCallback((pieceId: string, clientX: number, clientY: number, rect: DOMRect) => {
+    const current = {
+      pieceId,
+      grabXRatio: Math.max(0, Math.min(1, (clientX - rect.left) / rect.width)),
+      grabYRatio: Math.max(0, Math.min(1, (clientY - rect.top) / rect.height)),
+      clientX,
+      clientY,
+    }
+    nextPoint.current = { x: clientX, y: clientY }
+    setDrag(current)
+    gameAudio.playEffect('pickup')
+  }, [])
+
+  const beginBoardDrag = (pieceId: string, event: ReactPointerEvent<HTMLElement>) => {
     if (event.button !== 0) return
     event.preventDefault()
     event.stopPropagation()
     setSelected(pieceId)
-    const rect = event.currentTarget.getBoundingClientRect()
-    const current = {
+    startDrag(pieceId, event.clientX, event.clientY, event.currentTarget.getBoundingClientRect())
+  }
+
+  const beginTrayPress = (pieceId: string, event: ReactPointerEvent<HTMLElement>) => {
+    if (event.button !== 0) return
+    event.preventDefault()
+    event.stopPropagation()
+    setSelected(pieceId)
+    event.currentTarget.setPointerCapture(event.pointerId)
+    const press: PendingTrayPress = {
       pieceId,
-      grabXRatio: Math.max(0, Math.min(1, (event.clientX - rect.left) / rect.width)),
-      grabYRatio: Math.max(0, Math.min(1, (event.clientY - rect.top) / rect.height)),
+      pointerId: event.pointerId,
       clientX: event.clientX,
       clientY: event.clientY,
+      rect: event.currentTarget.getBoundingClientRect(),
+      timer: 0,
+      started: false,
     }
-    nextPoint.current = { x: event.clientX, y: event.clientY }
-    setDrag(current)
+    press.timer = window.setTimeout(() => {
+      if (pendingTrayPress.current !== press) return
+      press.started = true
+      suppressClickUntil.current = Date.now() + 650
+      startDrag(press.pieceId, press.clientX, press.clientY, press.rect)
+    }, 190)
+    pendingTrayPress.current = press
+  }
+
+  const moveTrayPress = (event: ReactPointerEvent<HTMLElement>) => {
+    const press = pendingTrayPress.current
+    if (!press || press.pointerId !== event.pointerId) return
+    press.clientX = event.clientX
+    press.clientY = event.clientY
+  }
+
+  const endTrayPress = (event: ReactPointerEvent<HTMLElement>) => {
+    const press = pendingTrayPress.current
+    if (!press || press.pointerId !== event.pointerId) return
+    window.clearTimeout(press.timer)
+    pendingTrayPress.current = null
   }
 
   useEffect(() => {
@@ -101,12 +153,18 @@ export function GameScreen({ onBack }: { onBack: () => void }) {
             row: Math.floor((top - board.top + cellSize / 2) / cellSize),
             col: Math.floor((left - board.left + cellSize / 2) / cellSize),
           }
-          const withinDropArea = event.clientX >= board.left && event.clientX <= board.right &&
-            event.clientY >= board.top && event.clientY <= board.bottom
+          const withinDropArea = event.clientX >= board.left && event.clientX <= board.right && event.clientY >= board.top && event.clientY <= board.bottom
           if (withinDropArea) {
-            setSnapshot((current) => placePiece(current, drag.pieceId, origin))
+            setSnapshot((current) => {
+              const next = placePiece(current, drag.pieceId, origin)
+              gameAudio.playEffect(next === current ? 'reject' : 'place')
+              return next
+            })
           } else if (snapshot.placements[drag.pieceId]) {
             setSnapshot((current) => removePiece(current, drag.pieceId))
+            gameAudio.playEffect('place')
+          } else {
+            gameAudio.playEffect('reject')
           }
         }
       }
@@ -125,11 +183,16 @@ export function GameScreen({ onBack }: { onBack: () => void }) {
     }
   }, [drag, positionOverlay, snapshot])
 
+  const rotate = (pieceId: string) => {
+    setSnapshot((current) => rotatePiece(current, pieceId))
+    gameAudio.playEffect('turn')
+  }
+
   const dragPiece = drag ? sampleLevel.pieces.find((piece) => piece.id === drag.pieceId) : null
   const dragShape = dragPiece ? transformCells(dragPiece.cells, orientationOf(snapshot, dragPiece.id)) : null
 
   return (
-    <main className="game-screen">
+    <main className={`game-screen dice-${theme.dice.surface}`} style={themeStyle(theme)}>
       <header className="game-header">
         <button className="icon-button" type="button" onClick={onBack} aria-label="Back">←</button>
         <div><span className="eyebrow">QYBEQ</span><h1>Fill every free cell</h1></div>
@@ -143,27 +206,25 @@ export function GameScreen({ onBack }: { onBack: () => void }) {
               {Array.from({ length: 36 }, (_, index) => {
                 const cell = { row: Math.floor(index / 6), col: index % 6 }
                 const blockedCell = blocked.get(cellKey(cell))
-                return <div className={blockedCell ? 'board-cell blocked' : 'board-cell'} key={cellKey(cell)}>
-                  {blockedCell && <span>{cellLabel(blockedCell)}</span>}
-                </div>
+                return <div className={blockedCell ? 'board-cell blocked' : 'board-cell'} key={cellKey(cell)}>{blockedCell && <span>{cellLabel(blockedCell)}</span>}</div>
               })}
             </div>
             <div className="piece-layer" ref={boardRef}>
               {Object.values(snapshot.placements).map((placement) => {
-              const piece = sampleLevel.pieces.find((value) => value.id === placement.pieceId)!
-              const cells = transformCells(piece.cells, placement.orientation)
-              const bounds = shapeBounds(cells)
-              return (
-                <button
-                  type="button"
-                  className={`board-piece${selected === placement.pieceId ? ' selected' : ''}${drag?.pieceId === placement.pieceId ? ' dragging-source' : ''}`}
-                  key={placement.pieceId}
-                  style={{ left: `${placement.origin.col / 6 * 100}%`, top: `${placement.origin.row / 6 * 100}%`, width: `${bounds.cols / 6 * 100}%`, height: `${bounds.rows / 6 * 100}%` }}
-                  onPointerDown={(event) => beginDrag(placement.pieceId, event)}
-                  onClick={() => setSelected(placement.pieceId)}
-                  aria-label={`${piece.name} piece`}
-                ><PieceSvg cells={cells} color={colors[placement.pieceId]} /></button>
-              )
+                const piece = sampleLevel.pieces.find((value) => value.id === placement.pieceId)!
+                const cells = transformCells(piece.cells, placement.orientation)
+                const bounds = shapeBounds(cells)
+                return (
+                  <button
+                    type="button"
+                    className={`board-piece${selected === placement.pieceId ? ' selected' : ''}${drag?.pieceId === placement.pieceId ? ' dragging-source' : ''}`}
+                    key={placement.pieceId}
+                    style={{ left: `${placement.origin.col / 6 * 100}%`, top: `${placement.origin.row / 6 * 100}%`, width: `${bounds.cols / 6 * 100}%`, height: `${bounds.rows / 6 * 100}%` }}
+                    onPointerDown={(event) => beginBoardDrag(placement.pieceId, event)}
+                    onClick={() => setSelected(placement.pieceId)}
+                    aria-label={`${piece.name} piece`}
+                  ><PieceSvg cells={cells} color={theme.pieceColors[placement.pieceId]} material={theme.material} /></button>
+                )
               })}
             </div>
           </div>
@@ -172,8 +233,11 @@ export function GameScreen({ onBack }: { onBack: () => void }) {
 
         <aside className="tray-panel">
           <div className="piece-controls">
-            <button type="button" onClick={() => setSnapshot((current) => rotatePiece(current, selected))}>↻ Rotate</button>
-            <button type="button" disabled={!selectedPiece.allowMirror} onClick={() => setSnapshot((current) => flipPiece(current, selected))}>⇋ Flip</button>
+            <button type="button" onClick={() => rotate(selected)}>↻ Rotate</button>
+            <button type="button" disabled={!selectedPiece.allowMirror} onClick={() => {
+              setSnapshot((current) => flipPiece(current, selected))
+              gameAudio.playEffect('turn')
+            }}>⇋ Flip</button>
           </div>
           <div className="piece-tray" aria-label="Pieces">
             {sampleLevel.pieces.filter((piece) => !snapshot.placements[piece.id]).map((piece) => {
@@ -185,17 +249,24 @@ export function GameScreen({ onBack }: { onBack: () => void }) {
                   className={`tray-piece${selected === piece.id ? ' selected' : ''}`}
                   key={piece.id}
                   onClick={() => {
+                    if (Date.now() < suppressClickUntil.current) {
+                      suppressClickUntil.current = 0
+                      return
+                    }
                     setSelected(piece.id)
-                    setSnapshot((current) => rotatePiece(current, piece.id))
+                    rotate(piece.id)
                   }}
                   aria-label={`${piece.name} piece`}
                 >
                   <span
                     className="tray-piece-art"
                     style={{ '--piece-cols': bounds.cols, '--piece-rows': bounds.rows } as CSSProperties}
-                    onPointerDown={(event) => beginDrag(piece.id, event)}
+                    onPointerDown={(event) => beginTrayPress(piece.id, event)}
+                    onPointerMove={moveTrayPress}
+                    onPointerUp={endTrayPress}
+                    onPointerCancel={endTrayPress}
                   >
-                    <PieceSvg cells={shape} color={colors[piece.id]} />
+                    <PieceSvg cells={shape} color={theme.pieceColors[piece.id]} material={theme.material} />
                   </span>
                 </button>
               )
@@ -212,7 +283,7 @@ export function GameScreen({ onBack }: { onBack: () => void }) {
         <div className="completion-card"><span className="completion-mark">✓</span><h2>Puzzle complete</h2><p>The TypeScript engine validated every cell.</p><button type="button" onClick={onBack}>Continue</button></div>
       </div>}
 
-      {drag && dragShape && createPortal(<div className="drag-overlay" ref={overlayRef} aria-hidden="true"><PieceSvg cells={dragShape} color={colors[drag.pieceId]} /></div>, document.body)}
+      {drag && dragShape && createPortal(<div className="drag-overlay" ref={overlayRef} aria-hidden="true"><div className="drag-overlay-art"><PieceSvg cells={dragShape} color={theme.pieceColors[drag.pieceId]} material={theme.material} /></div></div>, document.body)}
     </main>
   )
 }
