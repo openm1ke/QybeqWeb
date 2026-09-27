@@ -5,13 +5,21 @@ import { themes, themeStyle, type ThemePreset } from '../cosmetics/themes'
 function ThemePreview({ theme, compact = false }: { theme: ThemePreset; compact?: boolean }) {
   return (
     <div className={`theme-preview dice-${theme.dice.surface}${compact ? ' compact' : ''}`} style={themeStyle(theme)}>
-      <div className="preview-wells">{Array.from({ length: 16 }, (_, index) => <i key={index} />)}</div>
-      <div className="preview-die"><span>B2</span></div>
-      <div className="preview-piece preview-piece-one">
-        <PieceSvg cells={pieceById('elbow3').cells} color={theme.pieceColors.elbow3} material={theme.material} />
-      </div>
-      <div className="preview-piece preview-piece-two">
-        <PieceSvg cells={pieceById('domino').cells} color={theme.pieceColors.domino} material={theme.material} />
+      <div className="preview-grid">
+        {Array.from({ length: 16 }, (_, index) => (
+          <i
+            className="preview-well"
+            key={index}
+            style={{ gridColumn: index % 4 + 1, gridRow: Math.floor(index / 4) + 1 }}
+          />
+        ))}
+        <div className="preview-die"><span>B2</span></div>
+        <div className="preview-piece preview-piece-one">
+          <PieceSvg cells={pieceById('elbow3').cells} color={theme.pieceColors.elbow3} material={theme.material} />
+        </div>
+        <div className="preview-piece preview-piece-two">
+          <PieceSvg cells={pieceById('domino').cells} color={theme.pieceColors.domino} material={theme.material} />
+        </div>
       </div>
     </div>
   )

@@ -51,6 +51,25 @@ test('persists a selected visual theme', async ({ page }) => {
   await expect(page.locator('.piece-svg').first()).toHaveClass(/material-neon/)
 })
 
+test('keeps every theme preview inside its board grid', async ({ page }) => {
+  await page.goto('./')
+  await page.getByRole('button', { name: /customize/i }).click()
+  const previews = page.locator('.theme-preview')
+  for (let index = 0; index < await previews.count(); index += 1) {
+    const preview = previews.nth(index)
+    const gridBox = await preview.locator('.preview-grid').boundingBox()
+    if (!gridBox) throw new Error('Preview grid geometry is unavailable')
+    for (const item of ['.preview-die', '.preview-piece-one', '.preview-piece-two']) {
+      const itemBox = await preview.locator(item).boundingBox()
+      if (!itemBox) throw new Error(`Preview item geometry is unavailable: ${item}`)
+      expect(itemBox.x).toBeGreaterThanOrEqual(gridBox.x - 1)
+      expect(itemBox.y).toBeGreaterThanOrEqual(gridBox.y - 1)
+      expect(itemBox.x + itemBox.width).toBeLessThanOrEqual(gridBox.x + gridBox.width + 1)
+      expect(itemBox.y + itemBox.height).toBeLessThanOrEqual(gridBox.y + gridBox.height + 1)
+    }
+  }
+})
+
 test('persists music and effect controls', async ({ page }) => {
   await page.goto('./')
   await page.getByRole('button', { name: /settings/i }).click()
