@@ -31,6 +31,7 @@ export function GameScreen({ theme, onBack }: { theme: ThemePreset; onBack: () =
   const [snapshot, setSnapshot] = useState<GameSnapshot>(() => initialSnapshot(sampleLevel))
   const [selected, setSelected] = useState(sampleLevel.pieces[0].id)
   const [drag, setDrag] = useState<DragState | null>(null)
+  const [turnAnimation, setTurnAnimation] = useState({ pieceId: '', nonce: 0 })
   const boardRef = useRef<HTMLDivElement>(null)
   const overlayRef = useRef<HTMLDivElement>(null)
   const nextPoint = useRef({ x: 0, y: 0 })
@@ -184,6 +185,7 @@ export function GameScreen({ theme, onBack }: { theme: ThemePreset; onBack: () =
   }, [drag, positionOverlay, snapshot])
 
   const rotate = (pieceId: string) => {
+    setTurnAnimation((current) => ({ pieceId, nonce: current.nonce + 1 }))
     setSnapshot((current) => rotatePiece(current, pieceId))
     gameAudio.playEffect('turn')
   }
@@ -259,7 +261,8 @@ export function GameScreen({ theme, onBack }: { theme: ThemePreset; onBack: () =
                   aria-label={`${piece.name} piece`}
                 >
                   <span
-                    className="tray-piece-art"
+                    key={`${piece.id}:${turnAnimation.pieceId === piece.id ? turnAnimation.nonce : 0}`}
+                    className={`tray-piece-art${turnAnimation.pieceId === piece.id ? ' turning' : ''}`}
                     style={{ '--piece-cols': bounds.cols, '--piece-rows': bounds.rows } as CSSProperties}
                     onPointerDown={(event) => beginTrayPress(piece.id, event)}
                     onPointerMove={moveTrayPress}

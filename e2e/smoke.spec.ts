@@ -35,10 +35,15 @@ test('rotates a tray piece clockwise on click', async ({ page }) => {
   await page.goto('./')
   await page.getByRole('button', { name: /new puzzle/i }).click()
   const line = page.getByRole('button', { name: 'Line piece' })
+  const trayBefore = await page.locator('.piece-tray').boundingBox()
   await expect(line.locator('svg')).toHaveAttribute('viewBox', '0 0 100 400')
   await line.click()
+  await expect(line.locator('.tray-piece-art')).toHaveClass(/turning/)
   await expect(line.locator('svg')).toHaveAttribute('viewBox', '0 0 400 100')
   await expect(page.locator('.drag-overlay')).toHaveCount(0)
+  const trayAfter = await page.locator('.piece-tray').boundingBox()
+  expect(trayAfter?.width).toBe(trayBefore?.width)
+  expect(trayAfter?.height).toBe(trayBefore?.height)
 })
 
 test('persists a selected visual theme', async ({ page }) => {
