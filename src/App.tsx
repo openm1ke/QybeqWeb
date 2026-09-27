@@ -63,7 +63,7 @@ export default function App() {
         <div><span className="eyebrow">DAILY CHALLENGE</span><h2>Today’s board is ready</h2><p>Build your streak and earn up to three stars.</p></div>
         <button type="button" onClick={startGame}>Play daily</button>
       </section>
-      <footer className="menu-footer"><a href="./how-to-play.html">How to play</a><a href="./privacy.html">Privacy</a><span>Web preview 0.2</span></footer>
+      <footer className="menu-footer"><a href="./how-to-play.html">How to play</a><a href="./privacy.html">Privacy Policy</a><span>Web preview 0.2</span></footer>
     </main>
   )
 }

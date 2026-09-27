@@ -9,6 +9,15 @@ test('opens a playable puzzle on desktop and mobile', async ({ page }) => {
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true)
 })
 
+test('opens the privacy policy from the main page', async ({ page }) => {
+  await page.goto('./')
+  await page.getByRole('link', { name: /privacy policy/i }).click()
+  await expect(page).toHaveURL(/privacy\.html$/)
+  await expect(page.getByRole('heading', { name: /privacy policy/i })).toBeVisible()
+  await page.getByRole('button', { name: 'Русский' }).click()
+  await expect(page.getByRole('heading', { name: 'Политика конфиденциальности' })).toBeVisible()
+})
+
 test('drags a piece without losing its grab point', async ({ page }) => {
   await page.goto('./')
   await page.getByRole('button', { name: /new puzzle/i }).click()
