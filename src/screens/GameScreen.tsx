@@ -77,7 +77,7 @@ export function GameScreen({ theme, text, source, onComplete, onBack }: { theme:
   const solved = isSolved(snapshot)
   const blocked = useMemo(() => new Map(sampleLevel.blockedCells.map((cell) => [cellKey(cell), cell])), [])
   const selectedPiece = sampleLevel.pieces.find((piece) => piece.id === selected) ?? sampleLevel.pieces[0]
-  const activeHint = hint && !placementMatches(snapshot.placements[hint.pieceId], hint.target) ? hint : null
+  const activeHint = hint && !placementMatches(snapshot, snapshot.placements[hint.pieceId], hint.target) ? hint : null
   const hintedPiece = activeHint ? sampleLevel.pieces.find((piece) => piece.id === activeHint.pieceId) : null
   const hintedShape = activeHint && hintedPiece ? transformCells(hintedPiece.cells, activeHint.target.orientation) : null
   const hintedBounds = hintedShape ? shapeBounds(hintedShape) : null

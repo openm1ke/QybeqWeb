@@ -1,3 +1,5 @@
+import { absoluteCells } from './controller'
+import { cellKey } from './cells'
 import type { GameSnapshot, Placement } from './types'
 
 export interface PlacementHint {
@@ -6,23 +8,17 @@ export interface PlacementHint {
   readonly target: Placement
 }
 
-function normalizedTurns(value: number): number {
-  return ((value % 4) + 4) % 4
-}
-
-export function placementMatches(actual: Placement | undefined, target: Placement): boolean {
-  return actual != null &&
-    actual.pieceId === target.pieceId &&
-    actual.origin.row === target.origin.row &&
-    actual.origin.col === target.origin.col &&
-    normalizedTurns(actual.orientation.quarterTurns) === normalizedTurns(target.orientation.quarterTurns) &&
-    actual.orientation.mirrored === target.orientation.mirrored
+export function placementMatches(snapshot: GameSnapshot, actual: Placement | undefined, target: Placement): boolean {
+  if (actual == null || actual.pieceId !== target.pieceId) return false
+  const actualCells = absoluteCells(snapshot, actual).map(cellKey).sort()
+  const targetCells = absoluteCells(snapshot, target).map(cellKey).sort()
+  return actualCells.length === targetCells.length && actualCells.every((cell, index) => cell === targetCells[index])
 }
 
 export function nextPlacementHint(snapshot: GameSnapshot): PlacementHint | null {
   const misplaced = snapshot.level.referenceSolution.find((target) => {
     const actual = snapshot.placements[target.pieceId]
-    return actual != null && !placementMatches(actual, target)
+    return actual != null && !placementMatches(snapshot, actual, target)
   })
   if (misplaced) return { kind: 'relocate', pieceId: misplaced.pieceId, target: misplaced }
 

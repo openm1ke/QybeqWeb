@@ -27,6 +27,19 @@ describe('placement hints', () => {
   it('has no next move after the reference solution is complete', () => {
     const solved = applyReferenceSolution(initialSnapshot(sampleLevel))
     expect(nextPlacementHint(solved)).toBeNull()
-    expect(placementMatches(solved.placements.line4, sampleLevel.referenceSolution[0])).toBe(true)
+    expect(placementMatches(solved, solved.placements.line4, sampleLevel.referenceSolution[0])).toBe(true)
+  })
+
+  it('accepts a visually identical symmetric orientation as the completed hint', () => {
+    const target = sampleLevel.referenceSolution.find((placement) => placement.pieceId === 'line4')!
+    const snapshot = {
+      ...initialSnapshot(sampleLevel),
+      placements: {
+        line4: { ...target, orientation: { quarterTurns: 3, mirrored: false } },
+      },
+    }
+
+    expect(placementMatches(snapshot, snapshot.placements.line4, target)).toBe(true)
+    expect(nextPlacementHint(snapshot)).toMatchObject({ kind: 'place', pieceId: 'tee' })
   })
 })

@@ -130,8 +130,24 @@ test('shows one non-destructive hint and has no solution shortcut', async ({ pag
   await expect(page.locator('.board-piece')).toHaveCount(0)
   await expect(page.getByRole('dialog', { name: /puzzle complete/i })).toHaveCount(0)
 
+  const line = page.getByRole('button', { name: 'Line piece' })
+  await line.click()
+  await line.click()
+  await line.click()
+  const lineBox = await line.boundingBox()
+  const boardBox = await page.locator('.piece-layer').boundingBox()
+  if (!lineBox || !boardBox) throw new Error('Hint placement geometry is unavailable')
+  const cell = boardBox.width / 6
+  await page.mouse.move(lineBox.x + lineBox.width / 2, lineBox.y + lineBox.height / 2)
+  await page.mouse.down()
+  await page.waitForTimeout(220)
+  await page.mouse.move(boardBox.x + cell * 2, boardBox.y + cell / 2, { steps: 8 })
+  await page.mouse.up()
+  await expect(page.getByText('1 of 8 placed')).toBeVisible()
+
   await page.getByRole('button', { name: /2 hints left/i }).click()
-  await expect(page.getByRole('button', { name: /2 hints left/i })).toBeVisible()
+  await expect(page.getByRole('button', { name: /1 hint left/i })).toBeVisible()
+  await expect(page.locator('.hint-target')).toBeVisible()
 })
 
 test('persists a selected visual theme', async ({ page }) => {
