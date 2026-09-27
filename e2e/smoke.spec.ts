@@ -27,3 +27,12 @@ test('drags a piece without losing its grab point', async ({ page }) => {
   await expect(page.getByText('1 of 8 placed')).toBeVisible()
   await expect(page.locator('.board-piece')).toHaveCount(1)
 })
+
+test('rotates a tray piece clockwise on click', async ({ page }) => {
+  await page.goto('./')
+  await page.getByRole('button', { name: /new puzzle/i }).click()
+  const line = page.getByRole('button', { name: 'Line piece' })
+  await expect(line.locator('svg')).toHaveAttribute('viewBox', '0 0 100 400')
+  await line.click()
+  await expect(line.locator('svg')).toHaveAttribute('viewBox', '0 0 400 100')
+})

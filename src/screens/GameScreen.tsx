@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent } from 'react'
 import { createPortal } from 'react-dom'
 import { PieceSvg } from '../components/PieceSvg'
 import {
@@ -184,11 +184,20 @@ export function GameScreen({ onBack }: { onBack: () => void }) {
                   type="button"
                   className={`tray-piece${selected === piece.id ? ' selected' : ''}`}
                   key={piece.id}
-                  style={{ width: `${bounds.cols * 42}px`, height: `${bounds.rows * 42}px` }}
-                  onPointerDown={(event) => beginDrag(piece.id, event)}
-                  onClick={() => setSelected(piece.id)}
+                  onClick={() => {
+                    setSelected(piece.id)
+                    setSnapshot((current) => rotatePiece(current, piece.id))
+                  }}
                   aria-label={`${piece.name} piece`}
-                ><PieceSvg cells={shape} color={colors[piece.id]} /></button>
+                >
+                  <span
+                    className="tray-piece-art"
+                    style={{ '--piece-cols': bounds.cols, '--piece-rows': bounds.rows } as CSSProperties}
+                    onPointerDown={(event) => beginDrag(piece.id, event)}
+                  >
+                    <PieceSvg cells={shape} color={colors[piece.id]} />
+                  </span>
+                </button>
               )
             })}
           </div>

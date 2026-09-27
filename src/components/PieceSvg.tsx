@@ -12,6 +12,11 @@ interface PieceSvgProps {
 export function PieceSvg({ cells, color, className, label }: PieceSvgProps) {
   const bounds = shapeBounds(cells)
   const occupied = new Set(cells.map((cell) => `${cell.row}:${cell.col}`))
+  const junctions = cells.filter((cell) =>
+    occupied.has(`${cell.row}:${cell.col + 1}`) &&
+    occupied.has(`${cell.row + 1}:${cell.col}`) &&
+    occupied.has(`${cell.row + 1}:${cell.col + 1}`),
+  )
   const rawId = useId().replaceAll(':', '')
   const gradientId = `piece-gradient-${rawId}`
 
@@ -49,6 +54,12 @@ export function PieceSvg({ cells, color, className, label }: PieceSvgProps) {
             </g>
           )
         })}
+        {junctions.map((cell) => (
+          <g key={`junction-${cell.row}:${cell.col}`}>
+            <rect x={cell.col * 100 + 89} y={cell.row * 100 + 91} width="22" height="23" rx="5" fill="rgba(0,0,0,.24)" />
+            <rect x={cell.col * 100 + 90} y={cell.row * 100 + 90} width="20" height="20" fill={`url(#${gradientId})`} />
+          </g>
+        ))}
         {cells.map((cell) => {
           const x = cell.col * 100
           const y = cell.row * 100
@@ -75,6 +86,20 @@ export function PieceSvg({ cells, color, className, label }: PieceSvgProps) {
             </g>
           )
         })}
+        {/* Cover only the pin-sized intersection where four rounded faces
+            meet. Internal seams remain visible, but a 2×2 block cannot show
+            the background through its centre. */}
+        {junctions.map((cell) => (
+          <rect
+            key={`junction-cap-${cell.row}:${cell.col}`}
+            x={cell.col * 100 + 96}
+            y={cell.row * 100 + 95}
+            width="8"
+            height="9"
+            rx="2"
+            fill={`url(#${gradientId})`}
+          />
+        ))}
       </g>
     </svg>
   )
