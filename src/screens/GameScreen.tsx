@@ -404,8 +404,25 @@ export function GameScreen({ theme, text, source, onComplete, onBack }: { theme:
         </aside>}
       </section>
 
-      {solved && <div className="completion" role="dialog" aria-modal="true" aria-label={text.puzzleComplete}>
-        <div className="completion-card"><span className="completion-mark">✓</span><h2>{text.puzzleComplete}</h2><p>{text.puzzleCompleteDescription}</p><div className="completion-stars" aria-label={text.resultStars(earnedStars)}>{'★'.repeat(earnedStars)}{'☆'.repeat(3 - earnedStars)}</div><p>{text.resultStars(earnedStars)}</p><button type="button" onClick={onBack}>{text.continue}</button></div>
+      {solved && earnedStars > 0 && <div className="completion" role="dialog" aria-modal="true" aria-label={text.puzzleComplete}>
+        <div className="completion-card">
+          <span className="completion-mark">✓</span>
+          <h2>{text.puzzleComplete}</h2>
+          <p>{text.puzzleCompleteDescription}</p>
+          <div className="completion-stars" aria-label={text.resultStars(earnedStars)}>
+            {Array.from({ length: 3 }, (_, index) => <span
+              className={`completion-star${index < earnedStars ? ' earned' : ''}`}
+              key={index}
+              style={{ '--star-delay': `${420 + index * 320}ms` } as CSSProperties}
+              aria-hidden="true"
+            >
+              <span className="completion-star-outline">☆</span>
+              {index < earnedStars && <span className="completion-star-fill">★</span>}
+            </span>)}
+          </div>
+          <p className="completion-result">{text.resultStars(earnedStars)}</p>
+          <button type="button" onClick={onBack}>{text.continue}</button>
+        </div>
       </div>}
 
       {drag && dragShape && createPortal(<div className="drag-overlay" ref={overlayRef} aria-hidden="true"><div className="drag-overlay-art"><PieceSvg cells={dragShape} color={theme.pieceColors[drag.pieceId]} material={theme.material} /></div></div>, document.body)}
