@@ -93,11 +93,11 @@
         buttons.forEach((button) => button.setAttribute('aria-pressed', String(button.dataset.language === language)))
         contents.forEach((content) => { content.hidden = content.dataset.content !== language })
         document.querySelector('#return-link').textContent = language === 'ru' ? 'Вернуться в Qybeq' : 'Return to Qybeq'
-        try { localStorage.setItem('qybeq.policy.language', language) } catch {}
+        try { localStorage.setItem('qybeq.language.v1', language) } catch {}
       }
       buttons.forEach((button) => button.addEventListener('click', () => setLanguage(button.dataset.language)))
       let savedLanguage = null
-      try { savedLanguage = localStorage.getItem('qybeq.policy.language') } catch {}
+      try { savedLanguage = localStorage.getItem('qybeq.language.v1') } catch {}
       setLanguage(savedLanguage || (navigator.language.toLowerCase().startsWith('ru') ? 'ru' : 'en'))
     </script>
   </body>

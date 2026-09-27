@@ -11,6 +11,7 @@ application with React, TypeScript, Vite and SVG.
 - rotate, flip, move, remove and collision validation;
 - five persisted visual themes ported from mobile;
 - three-track background playlist, volume controls and gameplay effects;
+- persisted English/Russian interface selection;
 - exact-cover solver and validated mobile reference solution;
 - stable daily PRNG and one/two/three-star rules;
 - shared versioned JSON parity fixture;
@@ -19,6 +20,7 @@ application with React, TypeScript, Vite and SVG.
 
 The full implementation sequence is maintained in the mobile repository at
 `../GeniusSquare/docs/WEB_PORT_PLAN.md`.
+The current mobile parity gaps are tracked in `docs/MOBILE_PARITY_AUDIT.md`.
 
 ## Run
 

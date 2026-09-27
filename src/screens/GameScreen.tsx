@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom'
 import { gameAudio } from '../audio/audioService'
 import { PieceSvg } from '../components/PieceSvg'
 import { themeStyle, type ThemePreset } from '../cosmetics/themes'
+import type { AppCopy } from '../i18n/translations'
 import { applyReferenceSolution, flipPiece, initialSnapshot, isSolved, orientationOf, placePiece, removePiece, rotatePiece } from '../game/controller'
 import { cellKey, cellLabel } from '../game/cells'
 import { sampleLevel } from '../game/pieces'
@@ -27,7 +28,7 @@ interface PendingTrayPress {
   started: boolean
 }
 
-export function GameScreen({ theme, onBack }: { theme: ThemePreset; onBack: () => void }) {
+export function GameScreen({ theme, text, onBack }: { theme: ThemePreset; text: AppCopy; onBack: () => void }) {
   const [snapshot, setSnapshot] = useState<GameSnapshot>(() => initialSnapshot(sampleLevel))
   const [selected, setSelected] = useState(sampleLevel.pieces[0].id)
   const [drag, setDrag] = useState<DragState | null>(null)
@@ -196,9 +197,9 @@ export function GameScreen({ theme, onBack }: { theme: ThemePreset; onBack: () =
   return (
     <main className={`game-screen dice-${theme.dice.surface}`} style={themeStyle(theme)}>
       <header className="game-header">
-        <button className="icon-button" type="button" onClick={onBack} aria-label="Back">←</button>
-        <div><span className="eyebrow">QYBEQ</span><h1>Fill every free cell</h1></div>
-        <div className="timer" aria-label="Elapsed time">00:00</div>
+        <button className="icon-button" type="button" onClick={onBack} aria-label={text.back}>←</button>
+        <div><span className="eyebrow">QYBEQ</span><h1>{text.fillEveryCell}</h1></div>
+        <div className="timer" aria-label={text.elapsedTime}>00:00</div>
       </header>
 
       <section className="game-layout" aria-label="Puzzle">
@@ -230,16 +231,16 @@ export function GameScreen({ theme, onBack }: { theme: ThemePreset; onBack: () =
               })}
             </div>
           </div>
-          <div className="progress-row"><span>{Object.keys(snapshot.placements).length} of 8 placed</span><button type="button" className="hint-button">♢ <b>3</b></button></div>
+          <div className="progress-row"><span>{text.placed(Object.keys(snapshot.placements).length)}</span><button type="button" className="hint-button">♢ <b>3</b></button></div>
         </div>
 
         <aside className="tray-panel">
           <div className="piece-controls">
-            <button type="button" onClick={() => rotate(selected)}>↻ Rotate</button>
+            <button type="button" onClick={() => rotate(selected)}>↻ {text.rotate}</button>
             <button type="button" disabled={!selectedPiece.allowMirror} onClick={() => {
               setSnapshot((current) => flipPiece(current, selected))
               gameAudio.playEffect('turn')
-            }}>⇋ Flip</button>
+            }}>⇋ {text.flip}</button>
           </div>
           <div className="piece-tray" aria-label="Pieces">
             {sampleLevel.pieces.filter((piece) => !snapshot.placements[piece.id]).map((piece) => {
@@ -276,14 +277,14 @@ export function GameScreen({ theme, onBack }: { theme: ThemePreset; onBack: () =
             })}
           </div>
           <div className="debug-actions">
-            <button type="button" onClick={() => setSnapshot(initialSnapshot(sampleLevel))}>Reset</button>
-            <button type="button" onClick={() => setSnapshot((current) => applyReferenceSolution(current))}>Preview solution</button>
+            <button type="button" onClick={() => setSnapshot(initialSnapshot(sampleLevel))}>{text.reset}</button>
+            <button type="button" onClick={() => setSnapshot((current) => applyReferenceSolution(current))}>{text.previewSolution}</button>
           </div>
         </aside>
       </section>
 
-      {solved && <div className="completion" role="dialog" aria-modal="true" aria-label="Puzzle complete">
-        <div className="completion-card"><span className="completion-mark">✓</span><h2>Puzzle complete</h2><p>The TypeScript engine validated every cell.</p><button type="button" onClick={onBack}>Continue</button></div>
+      {solved && <div className="completion" role="dialog" aria-modal="true" aria-label={text.puzzleComplete}>
+        <div className="completion-card"><span className="completion-mark">✓</span><h2>{text.puzzleComplete}</h2><p>{text.puzzleCompleteDescription}</p><button type="button" onClick={onBack}>{text.continue}</button></div>
       </div>}
 
       {drag && dragShape && createPortal(<div className="drag-overlay" ref={overlayRef} aria-hidden="true"><div className="drag-overlay-art"><PieceSvg cells={dragShape} color={theme.pieceColors[drag.pieceId]} material={theme.material} /></div></div>, document.body)}

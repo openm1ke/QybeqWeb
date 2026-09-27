@@ -1,6 +1,7 @@
 import { PieceSvg } from '../components/PieceSvg'
 import { pieceById } from '../game/pieces'
 import { themes, themeStyle, type ThemePreset } from '../cosmetics/themes'
+import type { AppCopy } from '../i18n/translations'
 
 function ThemePreview({ theme, compact = false }: { theme: ThemePreset; compact?: boolean }) {
   return (
@@ -25,26 +26,27 @@ function ThemePreview({ theme, compact = false }: { theme: ThemePreset; compact?
   )
 }
 
-export function CustomizeScreen({ selected, onSelect, onBack }: {
+export function CustomizeScreen({ selected, text, onSelect, onBack }: {
   selected: ThemePreset
+  text: AppCopy
   onSelect: (theme: ThemePreset) => void
   onBack: () => void
 }) {
   return (
     <main className="sub-screen customize-screen" style={themeStyle(selected)}>
       <header className="sub-header">
-        <button className="icon-button" type="button" onClick={onBack} aria-label="Back">←</button>
-        <div><span className="eyebrow">APPEARANCE</span><h1>Customize</h1></div>
-        <span className="theme-badge">{selected.name}</span>
+        <button className="icon-button" type="button" onClick={onBack} aria-label={text.back}>←</button>
+        <div><span className="eyebrow">{text.appearance}</span><h1>{text.customize}</h1></div>
+        <span className="theme-badge">{text.themeName(selected.id, selected.name)}</span>
       </header>
 
       <section className="customize-content">
         <div className="active-preview">
           <ThemePreview theme={selected} />
-          <div><span className="eyebrow">LIVE PREVIEW</span><h2>{selected.name}</h2><p>Pieces, blockers and board update together.</p></div>
+          <div><span className="eyebrow">{text.livePreview}</span><h2>{text.themeName(selected.id, selected.name)}</h2><p>{text.previewDescription}</p></div>
         </div>
 
-        <div className="customize-heading"><div><span className="eyebrow">THEME SETS</span><h2>Choose a finish</h2></div><span>Changes save automatically</span></div>
+        <div className="customize-heading"><div><span className="eyebrow">{text.themeSets}</span><h2>{text.chooseFinish}</h2></div><span>{text.autosave}</span></div>
         <div className="theme-grid">
           {themes.map((theme) => (
             <button
@@ -55,7 +57,7 @@ export function CustomizeScreen({ selected, onSelect, onBack }: {
               aria-pressed={selected.id === theme.id}
             >
               <ThemePreview theme={theme} compact />
-              <span className="theme-card-copy"><b>{theme.name}</b><small>{theme.price === 0 ? 'Included' : `${theme.price} ★ · available in preview`}</small></span>
+              <span className="theme-card-copy"><b>{text.themeName(theme.id, theme.name)}</b><small>{theme.price === 0 ? text.included : `${theme.price} ★ · ${text.availableInPreview}`}</small></span>
               <span className="theme-check">{selected.id === theme.id ? '✓' : '→'}</span>
             </button>
           ))}

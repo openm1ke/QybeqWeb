@@ -101,3 +101,14 @@ test('persists music and effect controls', async ({ page }) => {
   await expect(page.locator('label').filter({ hasText: 'Background playlist' }).locator('input')).not.toBeChecked()
   await expect(page.locator('label').filter({ hasText: 'Sound effects' }).locator('input')).not.toBeChecked()
 })
+
+test('switches and persists the interface language', async ({ page }) => {
+  await page.goto('./')
+  await page.getByRole('button', { name: /settings/i }).click()
+  await page.getByRole('combobox', { name: 'Language' }).selectOption('ru')
+  await expect(page.getByRole('heading', { name: 'Настройки' })).toBeVisible()
+  await page.getByRole('button', { name: 'Назад' }).click()
+  await expect(page.getByRole('button', { name: /новая головоломка/i })).toBeVisible()
+  await page.reload()
+  await expect(page.getByRole('button', { name: /новая головоломка/i })).toBeVisible()
+})

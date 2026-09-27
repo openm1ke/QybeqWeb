@@ -114,6 +114,7 @@ button:focus-visible, a:focus-visible { outline: 3px solid rgba(84, 214, 212, .8
 .settings-link small, .setting-row small { color: var(--muted); }
 .settings-link strong { color: #78ded7; font-size: 26px; }
 .setting-row input[type='checkbox'] { width: 22px; height: 22px; accent-color: #58d5ce; }
+.language-select { min-width: 130px; padding: 10px 34px 10px 12px; border: 1px solid rgba(255,255,255,.12); border-radius: 12px; color: var(--text); background: #18212b; font: inherit; font-weight: 700; }
 .volume-row { align-items: center; }
 .volume-row input { width: min(48%, 250px); accent-color: #58d5ce; }
 @media (max-width: 760px) {
