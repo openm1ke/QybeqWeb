@@ -14,8 +14,7 @@
       a { color: #7fe3df; }
       .shell { width: min(820px, calc(100% - 36px)); margin: 0 auto; padding: 28px 0 84px; }
       .topbar { display: flex; align-items: center; justify-content: space-between; gap: 18px; }
-      .back { display: inline-flex; align-items: center; gap: 10px; color: #edf4f7; text-decoration: none; font-weight: 750; }
-      .back span { display: grid; width: 42px; height: 42px; place-items: center; border: 1px solid rgba(255,255,255,.12); border-radius: 50%; background: rgba(255,255,255,.045); }
+      .back { display: grid; width: 44px; height: 44px; place-items: center; border: 1px solid rgba(255,255,255,.12); border-radius: 50%; color: #edf4f7; background: rgba(255,255,255,.055); text-decoration: none; font-size: 20px; }
       .languages { display: flex; gap: 5px; padding: 4px; border: 1px solid rgba(255,255,255,.1); border-radius: 999px; background: rgba(255,255,255,.035); }
       .languages button { border: 0; border-radius: 999px; padding: 8px 13px; color: #9aa6b4; background: transparent; cursor: pointer; font: inherit; font-size: 13px; font-weight: 700; }
       .languages button[aria-pressed="true"] { color: #061313; background: #79dfda; }
@@ -34,7 +33,6 @@
       @media (max-width: 620px) {
         .shell { width: min(100% - 28px, 820px); padding-top: 18px; }
         .policy section { grid-template-columns: 1fr; gap: 10px; padding: 25px 0; }
-        .back strong { display: none; }
         .footer { align-items: flex-start; flex-direction: column; }
       }
     </style>
@@ -42,7 +40,7 @@
   <body>
     <main class="shell">
       <nav class="topbar" aria-label="Page navigation">
-        <a class="back" href="./"><span aria-hidden="true">←</span><strong>Qybeq</strong></a>
+        <a class="back" href="./" aria-label="Back">←</a>
         <div class="languages" aria-label="Language">
           <button type="button" data-language="en" aria-pressed="true">English</button>
           <button type="button" data-language="ru" aria-pressed="false">Русский</button>
@@ -93,6 +91,7 @@
         buttons.forEach((button) => button.setAttribute('aria-pressed', String(button.dataset.language === language)))
         contents.forEach((content) => { content.hidden = content.dataset.content !== language })
         document.querySelector('#return-link').textContent = language === 'ru' ? 'Вернуться в Qybeq' : 'Return to Qybeq'
+        document.querySelector('.back').setAttribute('aria-label', language === 'ru' ? 'Назад' : 'Back')
         try { localStorage.setItem('qybeq.language.v1', language) } catch {}
       }
       buttons.forEach((button) => button.addEventListener('click', () => setLanguage(button.dataset.language)))

@@ -5,7 +5,6 @@ export interface AppCopy {
   settings: string
   solved: string
   stars: string
-  ritual: string
   tagline: string
   newPuzzle: string
   customize: string
@@ -15,7 +14,7 @@ export interface AppCopy {
   playDaily: string
   howToPlay: string
   privacyPolicy: string
-  webPreview: string
+  currentStreak: string
   appearance: string
   theme: string
   themeDescription: string
@@ -54,7 +53,16 @@ export interface AppCopy {
   autosave: string
   included: string
   availableInPreview: string
+  locked: string
+  notEnoughStars: string
   placed: (count: number) => string
+  streakDays: (count: number) => string
+  starBalance: (count: number) => string
+  unlockFor: (price: number) => string
+  progressToUnlock: (current: number, price: number) => string
+  unlockThemeTitle: (name: string) => string
+  unlockThemeBody: (price: number, balanceAfter: number) => string
+  resultStars: (count: number) => string
   themeName: (id: string, fallback: string) => string
 }
 
@@ -65,10 +73,10 @@ const themeNames: Record<Language, Record<string, string>> = {
 
 export const copy: Record<Language, AppCopy> = {
   en: {
-    back: 'Back', settings: 'Settings', solved: 'Solved', stars: 'Stars', ritual: 'A DAILY LOGIC RITUAL',
+    back: 'Back', settings: 'Settings', solved: 'Solved', stars: 'Stars',
     tagline: 'Six dice. Eight pieces. One perfect square.', newPuzzle: 'New puzzle', customize: 'Customize',
     dailyChallenge: 'DAILY CHALLENGE', dailyReady: 'Today’s board is ready', dailyDescription: 'Build your streak and earn up to three stars.',
-    playDaily: 'Play daily', howToPlay: 'How to play', privacyPolicy: 'Privacy Policy', webPreview: 'Web preview 0.2',
+    playDaily: 'Play daily', howToPlay: 'How to play', privacyPolicy: 'Privacy Policy', currentStreak: 'Current streak',
     appearance: 'APPEARANCE', theme: 'Theme', themeDescription: 'Pieces, blockers and board', audio: 'AUDIO', music: 'Music',
     musicDescription: 'Background playlist', musicVolume: 'Music volume', soundEffects: 'Sound effects',
     soundEffectsDescription: 'Pieces, dice and completion', privacy: 'PRIVACY', anonymousAnalytics: 'Anonymous analytics',
@@ -80,14 +88,18 @@ export const copy: Record<Language, AppCopy> = {
     rotate: 'Rotate', flip: 'Flip', reset: 'Reset', previewSolution: 'Preview solution', puzzleComplete: 'Puzzle complete',
     puzzleCompleteDescription: 'Every free cell is filled correctly.', continue: 'Continue', livePreview: 'LIVE PREVIEW',
     previewDescription: 'Pieces, blockers and board update together.', themeSets: 'THEME SETS', chooseFinish: 'Choose a finish',
-    autosave: 'Changes save automatically', included: 'Included', availableInPreview: 'available in preview',
-    placed: (count) => `${count} of 8 placed`, themeName: (id, fallback) => themeNames.en[id] ?? fallback,
+    autosave: 'Changes save automatically', included: 'Included', availableInPreview: 'available in preview', locked: 'Locked',
+    notEnoughStars: 'Earn more stars by solving puzzles.', placed: (count) => `${count} of 8 placed`,
+    streakDays: (count) => `${count} day${count === 1 ? '' : 's'}`, starBalance: (count) => `${count} stars available`,
+    unlockFor: (price) => `Unlock for ${price} stars`, progressToUnlock: (current, price) => `${current} / ${price} stars`,
+    unlockThemeTitle: (name) => `Unlock ${name}?`, unlockThemeBody: (price, balanceAfter) => `This theme costs ${price} stars. Your balance after purchase will be ${balanceAfter} stars.`,
+    resultStars: (count) => `You earned ${count} star${count === 1 ? '' : 's'}.`, themeName: (id, fallback) => themeNames.en[id] ?? fallback,
   },
   ru: {
-    back: 'Назад', settings: 'Настройки', solved: 'Решено', stars: 'Звёзды', ritual: 'ЕЖЕДНЕВНЫЙ РИТУАЛ ЛОГИКИ',
+    back: 'Назад', settings: 'Настройки', solved: 'Решено', stars: 'Звёзды',
     tagline: 'Шесть кубиков. Восемь фигур. Один идеальный квадрат.', newPuzzle: 'Новая головоломка', customize: 'Оформление',
     dailyChallenge: 'ЗАДАНИЕ ДНЯ', dailyReady: 'Сегодняшняя головоломка готова', dailyDescription: 'Увеличивайте серию и получайте до трёх звёзд.',
-    playDaily: 'Играть', howToPlay: 'Как играть', privacyPolicy: 'Конфиденциальность', webPreview: 'Веб-версия 0.2',
+    playDaily: 'Играть', howToPlay: 'Как играть', privacyPolicy: 'Конфиденциальность', currentStreak: 'Текущая серия',
     appearance: 'ОФОРМЛЕНИЕ', theme: 'Тема', themeDescription: 'Фигуры, блокеры и поле', audio: 'ЗВУК', music: 'Музыка',
     musicDescription: 'Фоновый плейлист', musicVolume: 'Громкость музыки', soundEffects: 'Звуковые эффекты',
     soundEffectsDescription: 'Фигуры, кубики и завершение', privacy: 'КОНФИДЕНЦИАЛЬНОСТЬ', anonymousAnalytics: 'Анонимная аналитика',
@@ -99,8 +111,12 @@ export const copy: Record<Language, AppCopy> = {
     rotate: 'Повернуть', flip: 'Отразить', reset: 'Сбросить', previewSolution: 'Показать решение', puzzleComplete: 'Головоломка решена',
     puzzleCompleteDescription: 'Все свободные клетки заполнены правильно.', continue: 'Продолжить', livePreview: 'ПРЕДПРОСМОТР',
     previewDescription: 'Фигуры, блокеры и поле меняются вместе.', themeSets: 'ТЕМЫ', chooseFinish: 'Выберите оформление',
-    autosave: 'Изменения сохраняются автоматически', included: 'Доступно', availableInPreview: 'доступно в предпросмотре',
-    placed: (count) => `Размещено: ${count} из 8`, themeName: (id, fallback) => themeNames.ru[id] ?? fallback,
+    autosave: 'Изменения сохраняются автоматически', included: 'Доступно', availableInPreview: 'доступно в предпросмотре', locked: 'Закрыто',
+    notEnoughStars: 'Заработайте больше звёзд, решая головоломки.', placed: (count) => `Размещено: ${count} из 8`,
+    streakDays: (count) => `${count} дн.`, starBalance: (count) => `Доступно звёзд: ${count}`,
+    unlockFor: (price) => `Открыть за ${price} звёзд`, progressToUnlock: (current, price) => `${current} / ${price} звёзд`,
+    unlockThemeTitle: (name) => `Открыть «${name}»?`, unlockThemeBody: (price, balanceAfter) => `Это оформление стоит ${price} звёзд. После покупки останется ${balanceAfter} звёзд.`,
+    resultStars: (count) => `Получено звёзд: ${count}.`, themeName: (id, fallback) => themeNames.ru[id] ?? fallback,
   },
 }
 

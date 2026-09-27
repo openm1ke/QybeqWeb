@@ -1,7 +1,15 @@
 import { expect, test } from '@playwright/test'
 
+async function declineAnalytics(page: import('@playwright/test').Page) {
+  const dialog = page.getByRole('dialog', { name: /help improve qybeq/i })
+  if (await dialog.isVisible()) await dialog.getByRole('button', { name: /not now/i }).click()
+}
+
 test('opens a playable puzzle on desktop and mobile', async ({ page }) => {
   await page.goto('./')
+  const dailyBox = await page.getByRole('button', { name: /daily challenge/i }).boundingBox()
+  const puzzleBox = await page.getByRole('button', { name: /new puzzle/i }).boundingBox()
+  expect(dailyBox?.y).toBeLessThan(puzzleBox?.y ?? 0)
   await page.getByRole('button', { name: /new puzzle/i }).click()
   await expect(page.getByRole('heading', { name: /fill every free cell/i })).toBeVisible()
   await expect(page.getByLabel('Puzzle')).toBeVisible()
@@ -11,6 +19,17 @@ test('opens a playable puzzle on desktop and mobile', async ({ page }) => {
   await expect(page.locator('.piece-tray')).toBeVisible()
   await expect(page.getByText('0 of 8 placed')).toBeVisible()
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true)
+})
+
+test('opens the bilingual how-to-play page from the menu', async ({ page }) => {
+  await page.goto('./')
+  await declineAnalytics(page)
+  await page.getByRole('link', { name: /how to play/i }).click()
+  await expect(page).toHaveURL(/how-to-play\.html$/)
+  await expect(page.getByRole('heading', { name: /how to play/i })).toBeVisible()
+  await page.getByRole('button', { name: 'Русский' }).click()
+  await expect(page.getByRole('heading', { name: 'Как играть' })).toBeVisible()
+  await expect(page.getByRole('link', { name: 'Назад' })).toBeVisible()
 })
 
 test('opens the privacy policy from the main page', async ({ page }) => {
@@ -66,8 +85,13 @@ test('rotates a tray piece clockwise on click', async ({ page }) => {
 
 test('persists a selected visual theme', async ({ page }) => {
   await page.goto('./')
+  await page.evaluate(() => localStorage.setItem('qybeq.progress.v1', JSON.stringify({ availableStars: 12, solvedPuzzleCount: 4, unlockedThemeIds: ['classic'], dailyBestStars: {} })))
+  await page.reload()
+  await declineAnalytics(page)
   await page.getByRole('button', { name: /customize/i }).click()
-  await page.getByRole('button', { name: /neon/i }).click()
+  page.once('dialog', (dialog) => dialog.accept())
+  await page.getByRole('button', { name: /neon, unlock for 12 stars/i }).click()
+  await expect(page.getByText(/0 stars available/i)).toBeVisible()
   await page.getByRole('button', { name: /back/i }).click()
   await page.reload()
   await page.getByRole('button', { name: /new puzzle/i }).click()
@@ -75,8 +99,18 @@ test('persists a selected visual theme', async ({ page }) => {
   await expect(page.locator('.piece-svg').first()).toHaveClass(/material-neon/)
 })
 
+test('keeps unaffordable themes locked', async ({ page }) => {
+  await page.goto('./')
+  await declineAnalytics(page)
+  await page.getByRole('button', { name: /customize/i }).click()
+  await page.getByRole('button', { name: /neon, 0 \/ 12 stars/i }).click()
+  await expect(page.getByRole('status')).toHaveText(/earn more stars/i)
+  await expect(page.getByRole('button', { name: /qybeq classic/i })).toHaveAttribute('aria-pressed', 'true')
+})
+
 test('keeps every theme preview inside its board grid', async ({ page }) => {
   await page.goto('./')
+  await declineAnalytics(page)
   await page.getByRole('button', { name: /customize/i }).click()
   const previews = page.locator('.theme-preview')
   for (let index = 0; index < await previews.count(); index += 1) {
@@ -108,13 +142,11 @@ test('persists music and effect controls', async ({ page }) => {
 
 test('switches and persists the interface language', async ({ page }) => {
   await page.goto('./')
-  await page.getByRole('button', { name: /settings/i }).click()
-  await page.getByRole('combobox', { name: 'Language' }).selectOption('ru')
-  await expect(page.getByRole('heading', { name: 'Настройки' })).toBeVisible()
-  await page.getByRole('button', { name: 'Назад' }).click()
+  await page.getByRole('button', { name: 'Русский' }).click()
   await expect(page.getByRole('button', { name: /новая головоломка/i })).toBeVisible()
   await page.reload()
   await expect(page.getByRole('button', { name: /новая головоломка/i })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Русский' })).toHaveAttribute('aria-pressed', 'true')
 })
 
 

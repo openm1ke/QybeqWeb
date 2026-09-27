@@ -38,9 +38,23 @@ const diceLaunches = [
   { x: '-50%', y: '60%', midX: '-95%', midY: '-45%', spin: '540deg', delay: '355ms' },
 ] as const
 
-export function GameScreen({ theme, text, source, onBack }: { theme: ThemePreset; text: AppCopy; source: 'new' | 'daily'; onBack: () => void }) {
+export interface PuzzleCompletion {
+  stars: number
+  elapsedMs: number
+  assistanceUsed: boolean
+}
+
+function formatClock(totalSeconds: number): string {
+  const minutes = Math.floor(totalSeconds / 60).toString().padStart(2, '0')
+  const seconds = Math.floor(totalSeconds % 60).toString().padStart(2, '0')
+  return `${minutes}:${seconds}`
+}
+
+export function GameScreen({ theme, text, source, onComplete, onBack }: { theme: ThemePreset; text: AppCopy; source: 'new' | 'daily'; onComplete: (result: PuzzleCompletion) => void; onBack: () => void }) {
   const [snapshot, setSnapshot] = useState<GameSnapshot>(() => initialSnapshot(sampleLevel))
   const [phase, setPhase] = useState<'rolling' | 'play'>('rolling')
+  const [elapsedSeconds, setElapsedSeconds] = useState(0)
+  const [earnedStars, setEarnedStars] = useState(0)
   const [selected, setSelected] = useState(sampleLevel.pieces[0].id)
   const [drag, setDrag] = useState<DragState | null>(null)
   const [turnAnimation, setTurnAnimation] = useState({ pieceId: '', nonce: 0 })
@@ -53,6 +67,9 @@ export function GameScreen({ theme, text, source, onBack }: { theme: ThemePreset
   const solvedBefore = useRef(false)
   const rollFinished = useRef(false)
   const firstPlacementTracked = useRef(false)
+  const startedAt = useRef<number | null>(null)
+  const assistanceUsed = useRef(false)
+  const completionReported = useRef(false)
   const solved = isSolved(snapshot)
   const blocked = useMemo(() => new Map(sampleLevel.blockedCells.map((cell) => [cellKey(cell), cell])), [])
   const selectedPiece = sampleLevel.pieces.find((piece) => piece.id === selected) ?? sampleLevel.pieces[0]
@@ -60,6 +77,7 @@ export function GameScreen({ theme, text, source, onBack }: { theme: ThemePreset
   const finishRoll = useCallback((skipped = false) => {
     if (rollFinished.current) return
     rollFinished.current = true
+    startedAt.current = Date.now()
     setPhase('play')
     trackGoal('dice_roll_completed', { source, skipped })
     trackGoal('puzzle_started', { level_id: sampleLevel.id, source })
@@ -72,12 +90,26 @@ export function GameScreen({ theme, text, source, onBack }: { theme: ThemePreset
   }, [finishRoll])
 
   useEffect(() => {
-    if (solved && !solvedBefore.current) {
+    if (phase !== 'play' || solved) return
+    const update = () => setElapsedSeconds(startedAt.current == null ? 0 : Math.floor((Date.now() - startedAt.current) / 1000))
+    update()
+    const timer = window.setInterval(update, 250)
+    return () => window.clearInterval(timer)
+  }, [phase, solved])
+
+  useEffect(() => {
+    if (solved && !solvedBefore.current && !completionReported.current) {
+      completionReported.current = true
+      const elapsedMs = startedAt.current == null ? 0 : Date.now() - startedAt.current
+      const stars = assistanceUsed.current ? 1 : elapsedMs <= 60_000 ? 3 : 2
+      setElapsedSeconds(Math.floor(elapsedMs / 1000))
+      setEarnedStars(stars)
       gameAudio.playEffect('complete')
-      trackGoal('puzzle_completed', { level_id: sampleLevel.id, source, placed_count: Object.keys(snapshot.placements).length })
+      trackGoal('puzzle_completed', { level_id: sampleLevel.id, source, placed_count: Object.keys(snapshot.placements).length, elapsed_ms: elapsedMs, stars, assistance_used: assistanceUsed.current })
+      onComplete({ stars, elapsedMs, assistanceUsed: assistanceUsed.current })
     }
     solvedBefore.current = solved
-  }, [snapshot.placements, solved, source])
+  }, [onComplete, snapshot.placements, solved, source])
 
   useEffect(() => () => {
     if (pendingTrayPress.current) window.clearTimeout(pendingTrayPress.current.timer)
@@ -233,7 +265,7 @@ export function GameScreen({ theme, text, source, onBack }: { theme: ThemePreset
       <header className="game-header">
         <button className="icon-button" type="button" onClick={onBack} aria-label={text.back}>←</button>
         <div><span className="eyebrow">QYBEQ</span><h1>{text.fillEveryCell}</h1></div>
-        <div className="timer" aria-label={text.elapsedTime}>00:00</div>
+        <div className="timer" aria-label={text.elapsedTime}>{formatClock(elapsedSeconds)}</div>
       </header>
 
       <section className="game-layout" aria-label="Puzzle">
@@ -334,13 +366,13 @@ export function GameScreen({ theme, text, source, onBack }: { theme: ThemePreset
           </div>
           <div className="debug-actions">
             <button type="button" onClick={() => setSnapshot(initialSnapshot(sampleLevel))}>{text.reset}</button>
-            <button type="button" onClick={() => setSnapshot((current) => applyReferenceSolution(current))}>{text.previewSolution}</button>
+            <button type="button" onClick={() => { assistanceUsed.current = true; setSnapshot((current) => applyReferenceSolution(current)) }}>{text.previewSolution}</button>
           </div>
         </aside>}
       </section>
 
       {solved && <div className="completion" role="dialog" aria-modal="true" aria-label={text.puzzleComplete}>
-        <div className="completion-card"><span className="completion-mark">✓</span><h2>{text.puzzleComplete}</h2><p>{text.puzzleCompleteDescription}</p><button type="button" onClick={onBack}>{text.continue}</button></div>
+        <div className="completion-card"><span className="completion-mark">✓</span><h2>{text.puzzleComplete}</h2><p>{text.puzzleCompleteDescription}</p><div className="completion-stars" aria-label={text.resultStars(earnedStars)}>{'★'.repeat(earnedStars)}{'☆'.repeat(3 - earnedStars)}</div><p>{text.resultStars(earnedStars)}</p><button type="button" onClick={onBack}>{text.continue}</button></div>
       </div>}
 
       {drag && dragShape && createPortal(<div className="drag-overlay" ref={overlayRef} aria-hidden="true"><div className="drag-overlay-art"><PieceSvg cells={dragShape} color={theme.pieceColors[drag.pieceId]} material={theme.material} /></div></div>, document.body)}

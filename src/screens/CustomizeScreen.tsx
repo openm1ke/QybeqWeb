@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { PieceSvg } from '../components/PieceSvg'
 import { pieceById } from '../game/pieces'
 import { themes, themeStyle, type ThemePreset } from '../cosmetics/themes'
@@ -26,12 +27,33 @@ function ThemePreview({ theme, compact = false }: { theme: ThemePreset; compact?
   )
 }
 
-export function CustomizeScreen({ selected, text, onSelect, onBack }: {
+export function CustomizeScreen({ selected, text, stars, unlockedThemeIds, onSelect, onUnlock, onBack }: {
   selected: ThemePreset
   text: AppCopy
+  stars: number
+  unlockedThemeIds: ReadonlySet<string>
   onSelect: (theme: ThemePreset) => void
+  onUnlock: (theme: ThemePreset) => void
   onBack: () => void
 }) {
+  const [notice, setNotice] = useState('')
+
+  const choose = (theme: ThemePreset) => {
+    if (unlockedThemeIds.has(theme.id) || theme.price === 0) {
+      setNotice('')
+      onSelect(theme)
+      return
+    }
+    if (stars < theme.price) {
+      setNotice(text.notEnoughStars)
+      return
+    }
+    if (window.confirm(`${text.unlockThemeTitle(text.themeName(theme.id, theme.name))}\n\n${text.unlockThemeBody(theme.price, stars - theme.price)}`)) {
+      setNotice('')
+      onUnlock(theme)
+    }
+  }
+
   return (
     <main className="sub-screen customize-screen" style={themeStyle(selected)}>
       <header className="sub-header">
@@ -46,21 +68,27 @@ export function CustomizeScreen({ selected, text, onSelect, onBack }: {
           <div><span className="eyebrow">{text.livePreview}</span><h2>{text.themeName(selected.id, selected.name)}</h2><p>{text.previewDescription}</p></div>
         </div>
 
-        <div className="customize-heading"><div><span className="eyebrow">{text.themeSets}</span><h2>{text.chooseFinish}</h2></div><span>{text.autosave}</span></div>
+        <div className="customize-heading"><div><span className="eyebrow">{text.themeSets}</span><h2>{text.chooseFinish}</h2></div><span className="star-balance">★ {text.starBalance(stars)}</span></div>
+        {notice && <p className="customize-notice" role="status">{notice}</p>}
         <div className="theme-grid">
-          {themes.map((theme) => (
-            <button
-              type="button"
-              className={`theme-card${selected.id === theme.id ? ' selected' : ''}`}
-              key={theme.id}
-              onClick={() => onSelect(theme)}
-              aria-pressed={selected.id === theme.id}
-            >
-              <ThemePreview theme={theme} compact />
-              <span className="theme-card-copy"><b>{text.themeName(theme.id, theme.name)}</b><small>{theme.price === 0 ? text.included : `${theme.price} ★ · ${text.availableInPreview}`}</small></span>
-              <span className="theme-check">{selected.id === theme.id ? '✓' : '→'}</span>
-            </button>
-          ))}
+          {themes.map((theme) => {
+            const unlocked = unlockedThemeIds.has(theme.id) || theme.price === 0
+            const affordable = stars >= theme.price
+            return (
+              <button
+                type="button"
+                className={`theme-card${selected.id === theme.id ? ' selected' : ''}${unlocked ? '' : ' locked'}${!unlocked && affordable ? ' affordable' : ''}`}
+                key={theme.id}
+                onClick={() => choose(theme)}
+                aria-pressed={selected.id === theme.id}
+                aria-label={`${text.themeName(theme.id, theme.name)}, ${unlocked ? text.included : affordable ? text.unlockFor(theme.price) : text.progressToUnlock(stars, theme.price)}`}
+              >
+                <span className="theme-card-preview"><ThemePreview theme={theme} compact />{!unlocked && <span className="theme-lock" aria-hidden="true">🔒</span>}</span>
+                <span className="theme-card-copy"><b>{text.themeName(theme.id, theme.name)}</b><small>{unlocked ? text.included : affordable ? text.unlockFor(theme.price) : text.progressToUnlock(stars, theme.price)}</small></span>
+                <span className="theme-check">{selected.id === theme.id ? '✓' : unlocked ? '→' : '🔒'}</span>
+              </button>
+            )
+          })}
         </div>
       </section>
     </main>
