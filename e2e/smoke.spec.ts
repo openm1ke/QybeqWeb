@@ -5,13 +5,17 @@ test('opens a playable puzzle on desktop and mobile', async ({ page }) => {
   await page.getByRole('button', { name: /new puzzle/i }).click()
   await expect(page.getByRole('heading', { name: /fill every free cell/i })).toBeVisible()
   await expect(page.getByLabel('Puzzle')).toBeVisible()
+  await expect(page.locator('.roll-die')).toHaveCount(6)
+  await expect(page.getByRole('button', { name: /rolling coordinate dice/i })).toBeVisible()
+  await page.getByRole('button', { name: /rolling coordinate dice/i }).click()
+  await expect(page.locator('.piece-tray')).toBeVisible()
   await expect(page.getByText('0 of 8 placed')).toBeVisible()
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true)
 })
 
 test('opens the privacy policy from the main page', async ({ page }) => {
   await page.goto('./')
-  await page.getByRole('link', { name: /privacy policy/i }).click()
+  await page.getByRole('dialog', { name: /help improve qybeq/i }).getByRole('link', { name: /privacy policy/i }).click()
   await expect(page).toHaveURL(/privacy\.html$/)
   await expect(page.getByRole('heading', { name: /privacy policy/i })).toBeVisible()
   await page.getByRole('button', { name: 'Русский' }).click()
@@ -111,4 +115,21 @@ test('switches and persists the interface language', async ({ page }) => {
   await expect(page.getByRole('button', { name: /новая головоломка/i })).toBeVisible()
   await page.reload()
   await expect(page.getByRole('button', { name: /новая головоломка/i })).toBeVisible()
+})
+
+
+test('loads Yandex Metrika only after consent and keeps the setting', async ({ page }) => {
+  await page.route('https://mc.yandex.ru/**', (route) => route.abort())
+  await page.goto('./')
+  await expect(page.getByRole('dialog', { name: /help improve qybeq/i })).toBeVisible()
+  await expect(page.locator('#qybeq-yandex-metrika')).toHaveCount(0)
+  await page.getByRole('button', { name: /^allow$/i }).click()
+  await expect(page.locator('#qybeq-yandex-metrika')).toHaveAttribute('src', /113110265/)
+  expect(await page.evaluate(() => localStorage.getItem('qybeq.analytics.v1'))).toBe('enabled')
+
+  await page.getByRole('button', { name: /settings/i }).click()
+  const analytics = page.locator('label').filter({ hasText: 'Anonymous analytics' }).locator('input')
+  await expect(analytics).toBeChecked()
+  await analytics.uncheck()
+  expect(await page.evaluate(() => localStorage.getItem('qybeq.analytics.v1'))).toBe('disabled')
 })

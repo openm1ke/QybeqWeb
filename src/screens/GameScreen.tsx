@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent } from 'react'
 import { createPortal } from 'react-dom'
+import { trackGoal } from '../analytics/metrika'
 import { gameAudio } from '../audio/audioService'
 import { PieceSvg } from '../components/PieceSvg'
 import { themeStyle, type ThemePreset } from '../cosmetics/themes'
@@ -28,8 +29,18 @@ interface PendingTrayPress {
   started: boolean
 }
 
-export function GameScreen({ theme, text, onBack }: { theme: ThemePreset; text: AppCopy; onBack: () => void }) {
+const diceLaunches = [
+  { x: '-250%', y: '560%', midX: '-105%', midY: '150%', spin: '-620deg', delay: '0ms' },
+  { x: '150%', y: '460%', midX: '90%', midY: '100%', spin: '570deg', delay: '75ms' },
+  { x: '-150%', y: '360%', midX: '-65%', midY: '65%', spin: '-520deg', delay: '145ms' },
+  { x: '50%', y: '260%', midX: '85%', midY: '28%', spin: '650deg', delay: '215ms' },
+  { x: '150%', y: '160%', midX: '45%', midY: '-20%', spin: '-580deg', delay: '285ms' },
+  { x: '-50%', y: '60%', midX: '-95%', midY: '-45%', spin: '540deg', delay: '355ms' },
+] as const
+
+export function GameScreen({ theme, text, source, onBack }: { theme: ThemePreset; text: AppCopy; source: 'new' | 'daily'; onBack: () => void }) {
   const [snapshot, setSnapshot] = useState<GameSnapshot>(() => initialSnapshot(sampleLevel))
+  const [phase, setPhase] = useState<'rolling' | 'play'>('rolling')
   const [selected, setSelected] = useState(sampleLevel.pieces[0].id)
   const [drag, setDrag] = useState<DragState | null>(null)
   const [turnAnimation, setTurnAnimation] = useState({ pieceId: '', nonce: 0 })
@@ -40,14 +51,33 @@ export function GameScreen({ theme, text, onBack }: { theme: ThemePreset; text: 
   const pendingTrayPress = useRef<PendingTrayPress | null>(null)
   const suppressClickUntil = useRef(0)
   const solvedBefore = useRef(false)
+  const rollFinished = useRef(false)
+  const firstPlacementTracked = useRef(false)
   const solved = isSolved(snapshot)
   const blocked = useMemo(() => new Map(sampleLevel.blockedCells.map((cell) => [cellKey(cell), cell])), [])
   const selectedPiece = sampleLevel.pieces.find((piece) => piece.id === selected) ?? sampleLevel.pieces[0]
 
+  const finishRoll = useCallback((skipped = false) => {
+    if (rollFinished.current) return
+    rollFinished.current = true
+    setPhase('play')
+    trackGoal('dice_roll_completed', { source, skipped })
+    trackGoal('puzzle_started', { level_id: sampleLevel.id, source })
+  }, [source])
+
   useEffect(() => {
-    if (solved && !solvedBefore.current) gameAudio.playEffect('complete')
+    const reducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false
+    const timer = window.setTimeout(() => finishRoll(false), reducedMotion ? 360 : 1820)
+    return () => window.clearTimeout(timer)
+  }, [finishRoll])
+
+  useEffect(() => {
+    if (solved && !solvedBefore.current) {
+      gameAudio.playEffect('complete')
+      trackGoal('puzzle_completed', { level_id: sampleLevel.id, source, placed_count: Object.keys(snapshot.placements).length })
+    }
     solvedBefore.current = solved
-  }, [solved])
+  }, [snapshot.placements, solved, source])
 
   useEffect(() => () => {
     if (pendingTrayPress.current) window.clearTimeout(pendingTrayPress.current.timer)
@@ -160,6 +190,10 @@ export function GameScreen({ theme, text, onBack }: { theme: ThemePreset; text: 
             setSnapshot((current) => {
               const next = placePiece(current, drag.pieceId, origin)
               gameAudio.playEffect(next === current ? 'reject' : 'place')
+              if (next !== current && Object.keys(current.placements).length === 0 && !firstPlacementTracked.current) {
+                firstPlacementTracked.current = true
+                trackGoal('first_piece_placed', { level_id: sampleLevel.id, source, piece_id: drag.pieceId })
+              }
               return next
             })
           } else if (snapshot.placements[drag.pieceId]) {
@@ -183,7 +217,7 @@ export function GameScreen({ theme, text, onBack }: { theme: ThemePreset; text: 
       if (animationFrame.current != null) cancelAnimationFrame(animationFrame.current)
       animationFrame.current = null
     }
-  }, [drag, positionOverlay, snapshot])
+  }, [drag, positionOverlay, snapshot, source])
 
   const rotate = (pieceId: string) => {
     setTurnAnimation((current) => ({ pieceId, nonce: current.nonce + 1 }))
@@ -209,7 +243,8 @@ export function GameScreen({ theme, text, onBack }: { theme: ThemePreset; text: 
               {Array.from({ length: 36 }, (_, index) => {
                 const cell = { row: Math.floor(index / 6), col: index % 6 }
                 const blockedCell = blocked.get(cellKey(cell))
-                return <div className={blockedCell ? 'board-cell blocked' : 'board-cell'} key={cellKey(cell)}>{blockedCell && <span>{cellLabel(blockedCell)}</span>}</div>
+                const showBlocker = phase === 'play' && blockedCell
+                return <div className={showBlocker ? 'board-cell blocked' : 'board-cell'} key={cellKey(cell)}>{showBlocker && <span>{cellLabel(showBlocker)}</span>}</div>
               })}
             </div>
             <div className="piece-layer" ref={boardRef}>
@@ -230,11 +265,32 @@ export function GameScreen({ theme, text, onBack }: { theme: ThemePreset; text: 
                 )
               })}
             </div>
+            {phase === 'rolling' && <button className="dice-roll-layer" type="button" onClick={() => finishRoll(true)} aria-label={`${text.rollingDice} ${text.tapToSkip}`}>
+              {sampleLevel.blockedCells.map((cell, index) => {
+                const launch = diceLaunches[index]
+                return <span
+                  className="roll-die"
+                  key={cellKey(cell)}
+                  style={{
+                    gridColumn: cell.col + 1,
+                    gridRow: cell.row + 1,
+                    '--roll-x': launch.x,
+                    '--roll-y': launch.y,
+                    '--roll-mid-x': launch.midX,
+                    '--roll-mid-y': launch.midY,
+                    '--roll-spin': launch.spin,
+                    '--roll-delay': launch.delay,
+                  } as CSSProperties}
+                ><b>{cellLabel(cell)}</b></span>
+              })}
+            </button>}
           </div>
           <div className="progress-row"><span>{text.placed(Object.keys(snapshot.placements).length)}</span><button type="button" className="hint-button">♢ <b>3</b></button></div>
         </div>
 
-        <aside className="tray-panel">
+        {phase === 'rolling' ? <aside className="tray-panel roll-status-panel" aria-live="polite">
+          <div className="roll-status-card"><span className="dice-status-icon" aria-hidden="true">◇</span><div><span className="eyebrow">QYBEQ</span><h2>{text.rollingDice}</h2><p>{text.tapToSkip}</p></div></div>
+        </aside> : <aside className="tray-panel">
           <div className="piece-controls">
             <button type="button" onClick={() => rotate(selected)}>↻ {text.rotate}</button>
             <button type="button" disabled={!selectedPiece.allowMirror} onClick={() => {
@@ -280,7 +336,7 @@ export function GameScreen({ theme, text, onBack }: { theme: ThemePreset; text: 
             <button type="button" onClick={() => setSnapshot(initialSnapshot(sampleLevel))}>{text.reset}</button>
             <button type="button" onClick={() => setSnapshot((current) => applyReferenceSolution(current))}>{text.previewSolution}</button>
           </div>
-        </aside>
+        </aside>}
       </section>
 
       {solved && <div className="completion" role="dialog" aria-modal="true" aria-label={text.puzzleComplete}>

@@ -25,12 +25,21 @@ export interface AppCopy {
   musicVolume: string
   soundEffects: string
   soundEffectsDescription: string
+  privacy: string
+  anonymousAnalytics: string
+  anonymousAnalyticsDescription: string
+  analyticsConsentTitle: string
+  analyticsConsentBody: string
+  allowAnalytics: string
+  declineAnalytics: string
   language: string
   languageDescription: string
   english: string
   russian: string
   fillEveryCell: string
   elapsedTime: string
+  rollingDice: string
+  tapToSkip: string
   rotate: string
   flip: string
   reset: string
@@ -62,8 +71,12 @@ export const copy: Record<Language, AppCopy> = {
     playDaily: 'Play daily', howToPlay: 'How to play', privacyPolicy: 'Privacy Policy', webPreview: 'Web preview 0.2',
     appearance: 'APPEARANCE', theme: 'Theme', themeDescription: 'Pieces, blockers and board', audio: 'AUDIO', music: 'Music',
     musicDescription: 'Background playlist', musicVolume: 'Music volume', soundEffects: 'Sound effects',
-    soundEffectsDescription: 'Pieces, dice and completion', language: 'Language', languageDescription: 'Interface language',
+    soundEffectsDescription: 'Pieces, dice and completion', privacy: 'PRIVACY', anonymousAnalytics: 'Anonymous analytics',
+    anonymousAnalyticsDescription: 'Sessions, puzzle results and feature usage', analyticsConsentTitle: 'Help improve Qybeq?',
+    analyticsConsentBody: 'Allow anonymous analytics about visits, sessions, puzzle results and feature usage. Board positions, contacts and precise location are not sent.',
+    allowAnalytics: 'Allow', declineAnalytics: 'Not now', language: 'Language', languageDescription: 'Interface language',
     english: 'English', russian: 'Русский', fillEveryCell: 'Fill every free cell', elapsedTime: 'Elapsed time',
+    rollingDice: 'Rolling coordinate dice…', tapToSkip: 'Tap to skip',
     rotate: 'Rotate', flip: 'Flip', reset: 'Reset', previewSolution: 'Preview solution', puzzleComplete: 'Puzzle complete',
     puzzleCompleteDescription: 'Every free cell is filled correctly.', continue: 'Continue', livePreview: 'LIVE PREVIEW',
     previewDescription: 'Pieces, blockers and board update together.', themeSets: 'THEME SETS', chooseFinish: 'Choose a finish',
@@ -77,8 +90,12 @@ export const copy: Record<Language, AppCopy> = {
     playDaily: 'Играть', howToPlay: 'Как играть', privacyPolicy: 'Конфиденциальность', webPreview: 'Веб-версия 0.2',
     appearance: 'ОФОРМЛЕНИЕ', theme: 'Тема', themeDescription: 'Фигуры, блокеры и поле', audio: 'ЗВУК', music: 'Музыка',
     musicDescription: 'Фоновый плейлист', musicVolume: 'Громкость музыки', soundEffects: 'Звуковые эффекты',
-    soundEffectsDescription: 'Фигуры, кубики и завершение', language: 'Язык', languageDescription: 'Язык интерфейса',
+    soundEffectsDescription: 'Фигуры, кубики и завершение', privacy: 'КОНФИДЕНЦИАЛЬНОСТЬ', anonymousAnalytics: 'Анонимная аналитика',
+    anonymousAnalyticsDescription: 'Сессии, результаты головоломок и использование функций', analyticsConsentTitle: 'Помочь улучшить Qybeq?',
+    analyticsConsentBody: 'Разрешите анонимную аналитику посещений, сессий, результатов головоломок и использования функций. Позиции на поле, контакты и точная геолокация не отправляются.',
+    allowAnalytics: 'Разрешить', declineAnalytics: 'Не сейчас', language: 'Язык', languageDescription: 'Язык интерфейса',
     english: 'English', russian: 'Русский', fillEveryCell: 'Заполните все свободные клетки', elapsedTime: 'Время',
+    rollingDice: 'Бросаем координатные кубики…', tapToSkip: 'Нажмите, чтобы пропустить',
     rotate: 'Повернуть', flip: 'Отразить', reset: 'Сбросить', previewSolution: 'Показать решение', puzzleComplete: 'Головоломка решена',
     puzzleCompleteDescription: 'Все свободные клетки заполнены правильно.', continue: 'Продолжить', livePreview: 'ПРЕДПРОСМОТР',
     previewDescription: 'Фигуры, блокеры и поле меняются вместе.', themeSets: 'ТЕМЫ', chooseFinish: 'Выберите оформление',

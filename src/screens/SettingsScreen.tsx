@@ -1,12 +1,14 @@
 import type { AudioSettings } from '../audio/audioService'
 import type { AppCopy, Language } from '../i18n/translations'
 
-export function SettingsScreen({ settings, language, text, onChange, onLanguageChange, onCustomize, onBack }: {
+export function SettingsScreen({ settings, language, text, analyticsEnabled, onChange, onLanguageChange, onAnalyticsChange, onCustomize, onBack }: {
   settings: AudioSettings
   language: Language
   text: AppCopy
+  analyticsEnabled: boolean
   onChange: (settings: AudioSettings) => void
   onLanguageChange: (language: Language) => void
+  onAnalyticsChange: (enabled: boolean) => void
   onCustomize: () => void
   onBack: () => void
 }) {
@@ -24,6 +26,8 @@ export function SettingsScreen({ settings, language, text, onChange, onLanguageC
         <label className="setting-row"><span><b>{text.music}</b><small>{text.musicDescription}</small></span><input type="checkbox" checked={settings.musicEnabled} onChange={(event) => onChange({ ...settings, musicEnabled: event.target.checked })} /></label>
         <label className="setting-row volume-row"><span><b>{text.musicVolume}</b><small>{Math.round(settings.musicVolume * 100)}%</small></span><input aria-label={text.musicVolume} type="range" min="0" max="1" step="0.01" value={settings.musicVolume} disabled={!settings.musicEnabled} onChange={(event) => onChange({ ...settings, musicVolume: Number(event.target.value) })} /></label>
         <label className="setting-row"><span><b>{text.soundEffects}</b><small>{text.soundEffectsDescription}</small></span><input type="checkbox" checked={settings.effectsEnabled} onChange={(event) => onChange({ ...settings, effectsEnabled: event.target.checked })} /></label>
+        <span className="eyebrow settings-section-label">{text.privacy}</span>
+        <label className="setting-row"><span><b>{text.anonymousAnalytics}</b><small>{text.anonymousAnalyticsDescription}</small></span><input type="checkbox" checked={analyticsEnabled} onChange={(event) => onAnalyticsChange(event.target.checked)} /></label>
       </section>
     </main>
   )
