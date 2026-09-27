@@ -43,9 +43,6 @@ export interface AppCopy {
   flip: string
   reset: string
   hintsLeft: (count: number) => string
-  hintPlace: (piece: string, cell: string) => string
-  hintRelocate: (piece: string, cell: string) => string
-  pieceName: (id: string, fallback: string) => string
   puzzleComplete: string
   puzzleCompleteDescription: string
   continue: string
@@ -74,11 +71,6 @@ const themeNames: Record<Language, Record<string, string>> = {
   ru: { classic: 'Qybeq Classic', neon: 'Неон', porcelain: 'Фарфор', ember: 'Уголь', prism: 'Призма' },
 }
 
-const pieceNames: Record<Language, Record<string, string>> = {
-  en: { line4: 'Line', elbow4: 'L', tee: 'T', square: 'Square', zigzag: 'S', flare: 'F-pentomino', elbow3: 'Small L', domino: 'Domino' },
-  ru: { line4: 'линию', elbow4: 'большую Г', tee: 'фигуру Т', square: 'квадрат', zigzag: 'зигзаг', flare: 'пентамино Ф', elbow3: 'малую Г', domino: 'домино' },
-}
-
 export const copy: Record<Language, AppCopy> = {
   en: {
     back: 'Back', settings: 'Settings', solved: 'Solved', stars: 'Stars',
@@ -93,9 +85,7 @@ export const copy: Record<Language, AppCopy> = {
     allowAnalytics: 'Allow', declineAnalytics: 'Not now', language: 'Language', languageDescription: 'Interface language',
     english: 'English', russian: 'Русский', fillEveryCell: 'Fill every free cell', elapsedTime: 'Elapsed time',
     rollingDice: 'Rolling coordinate dice…', tapToSkip: 'Tap to skip',
-    rotate: 'Rotate', flip: 'Flip', reset: 'Reset', hintsLeft: (count) => `${count} hint${count === 1 ? '' : 's'} left`,
-    hintPlace: (piece, cell) => `Place ${piece} at ${cell}`, hintRelocate: (piece, cell) => `Move ${piece} to ${cell}`,
-    pieceName: (id, fallback) => pieceNames.en[id] ?? fallback, puzzleComplete: 'Puzzle complete',
+    rotate: 'Rotate', flip: 'Flip', reset: 'Reset', hintsLeft: (count) => `${count} hint${count === 1 ? '' : 's'} left`, puzzleComplete: 'Puzzle complete',
     puzzleCompleteDescription: 'Every free cell is filled correctly.', continue: 'Continue', livePreview: 'LIVE PREVIEW',
     previewDescription: 'Pieces, blockers and board update together.', themeSets: 'THEME SETS', chooseFinish: 'Choose a finish',
     autosave: 'Changes save automatically', included: 'Included', availableInPreview: 'available in preview', locked: 'Locked',
@@ -118,9 +108,7 @@ export const copy: Record<Language, AppCopy> = {
     allowAnalytics: 'Разрешить', declineAnalytics: 'Не сейчас', language: 'Язык', languageDescription: 'Язык интерфейса',
     english: 'English', russian: 'Русский', fillEveryCell: 'Заполните все свободные клетки', elapsedTime: 'Время',
     rollingDice: 'Бросаем координатные кубики…', tapToSkip: 'Нажмите, чтобы пропустить',
-    rotate: 'Повернуть', flip: 'Отразить', reset: 'Сбросить', hintsLeft: (count) => `Осталось подсказок: ${count}`,
-    hintPlace: (piece, cell) => `Поставьте ${piece} в ${cell}`, hintRelocate: (piece, cell) => `Переместите ${piece} в ${cell}`,
-    pieceName: (id, fallback) => pieceNames.ru[id] ?? fallback, puzzleComplete: 'Головоломка решена',
+    rotate: 'Повернуть', flip: 'Отразить', reset: 'Сбросить', hintsLeft: (count) => `Осталось подсказок: ${count}`, puzzleComplete: 'Головоломка решена',
     puzzleCompleteDescription: 'Все свободные клетки заполнены правильно.', continue: 'Продолжить', livePreview: 'ПРЕДПРОСМОТР',
     previewDescription: 'Фигуры, блокеры и поле меняются вместе.', themeSets: 'ТЕМЫ', chooseFinish: 'Выберите оформление',
     autosave: 'Изменения сохраняются автоматически', included: 'Доступно', availableInPreview: 'доступно в предпросмотре', locked: 'Закрыто',

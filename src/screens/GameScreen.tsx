@@ -352,9 +352,6 @@ export function GameScreen({ theme, text, source, onComplete, onBack }: { theme:
             </button>}
           </div>
           <div className="progress-row"><span>{text.placed(Object.keys(snapshot.placements).length)}</span><button type="button" className={`hint-button${activeHint ? ' active' : ''}`} disabled={phase !== 'play' || solved || (!activeHint && hintsRemaining <= 0)} onClick={requestHint} aria-label={text.hintsLeft(hintsRemaining)}>♢ <b>{hintsRemaining}</b></button></div>
-          {activeHint && hintedPiece && <p className="hint-caption" role="status">{activeHint.kind === 'place'
-            ? text.hintPlace(text.pieceName(hintedPiece.id, hintedPiece.name), cellLabel(activeHint.target.origin))
-            : text.hintRelocate(text.pieceName(hintedPiece.id, hintedPiece.name), cellLabel(activeHint.target.origin))}</p>}
         </div>
 
         {phase === 'rolling' ? <aside className="tray-panel roll-status-panel" aria-live="polite">

@@ -1,76 +1,53 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#090d13" />
-    <meta name="description" content="How to play Qybeq: roll coordinate dice, place every piece and fill the board." />
-    <link rel="icon" type="image/png" href="./qybeq-icon.png" />
-    <title>Qybeq — How to play</title>
-    <style>
-      :root { color-scheme: dark; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: #edf4f7; background: #090d13; }
-      * { box-sizing: border-box; }
-      body { min-height: 100vh; margin: 0; background: radial-gradient(circle at 15% -10%, rgba(60,197,194,.14), transparent 32rem), radial-gradient(circle at 90% 15%, rgba(121,92,233,.12), transparent 34rem), #090d13; }
-      .shell { width: min(820px, calc(100% - 36px)); margin: 0 auto; padding: 28px 0 84px; }
-      .topbar { display: flex; align-items: center; justify-content: space-between; gap: 18px; }
-      .back { display: grid; width: 44px; height: 44px; place-items: center; border: 1px solid rgba(255,255,255,.12); border-radius: 50%; color: #edf4f7; background: rgba(255,255,255,.055); text-decoration: none; font-size: 20px; }
-      .back:focus-visible, button:focus-visible { outline: 3px solid rgba(84,214,212,.86); outline-offset: 3px; }
-      .languages { display: flex; gap: 4px; padding: 4px; border: 1px solid rgba(255,255,255,.1); border-radius: 999px; background: rgba(255,255,255,.035); }
-      .languages button { min-height: 34px; border: 0; border-radius: 999px; padding: 0 12px; color: #9aa6b4; background: transparent; cursor: pointer; font: inherit; font-size: 12px; font-weight: 750; }
-      .languages button[aria-pressed="true"] { color: #061313; background: #79dfda; }
-      .hero { padding: clamp(52px,10vw,88px) 0 34px; border-bottom: 1px solid rgba(255,255,255,.1); }
-      .eyebrow { color: #9ca8b7; font-size: 11px; font-weight: 850; letter-spacing: .3em; }
-      h1 { margin: 16px 0 14px; font-size: clamp(38px,8vw,68px); line-height: 1.02; letter-spacing: -.035em; }
-      .intro { max-width: 650px; margin: 0; color: #b2bdc8; font-size: clamp(16px,2.5vw,19px); line-height: 1.65; }
-      .steps { display: grid; gap: 12px; padding: 30px 0; }
-      .step { display: grid; grid-template-columns: 48px 1fr; gap: 16px; align-items: start; padding: 18px; border: 1px solid rgba(255,255,255,.08); border-radius: 18px; background: rgba(255,255,255,.025); }
-      .step b { display: grid; width: 48px; height: 48px; place-items: center; border-radius: 15px; color: #061313; background: linear-gradient(135deg,#8cf0e7,#51cecf); font-size: 18px; }
-      .step h2 { margin: 2px 0 6px; font-size: 18px; }
-      .step p { margin: 0; color: #aab5c0; line-height: 1.6; }
-      .reward { padding: 22px; border: 1px solid rgba(255,212,92,.28); border-radius: 20px; background: rgba(255,212,92,.055); }
-      .reward h2 { margin: 0 0 12px; color: #ffe09a; }
-      .reward-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; }
-      .reward-grid div { padding: 13px 9px; border-radius: 14px; background: rgba(0,0,0,.18); text-align: center; }
-      .reward-grid strong { display: block; color: #ffd45c; font-size: 20px; letter-spacing: 2px; }
-      .reward-grid span { display: block; margin-top: 5px; color: #aab5c0; font-size: 12px; }
-      [hidden] { display: none !important; }
-      @media (max-width:560px) { .shell { width:min(100% - 28px,820px); padding-top:18px; } .reward-grid { grid-template-columns:1fr; } }
-    </style>
-  </head>
-  <body>
-    <main class="shell">
-      <nav class="topbar" aria-label="Page navigation">
-        <a class="back" href="./" aria-label="Back">←</a>
-        <div class="languages" aria-label="Language"><button type="button" data-language="en" aria-pressed="true">English</button><button type="button" data-language="ru" aria-pressed="false">Русский</button></div>
-      </nav>
-      <article data-content="en">
-        <header class="hero"><span class="eyebrow">QYBEQ · RULES</span><h1>How to play</h1><p class="intro">Six coordinate dice create a new board. Fit all eight pieces into the remaining space and leave no empty cell.</p></header>
-        <section class="steps">
-          <div class="step"><b>1</b><div><h2>Roll the dice</h2><p>Each die names one blocked coordinate on the 6×6 board. Pieces cannot cover these cells.</p></div></div>
-          <div class="step"><b>2</b><div><h2>Move the pieces</h2><p>Press and hold a piece, then drag it onto the board. A quick tap rotates it clockwise. Use Flip when the selected shape allows it.</p></div></div>
-          <div class="step"><b>3</b><div><h2>Fill the square</h2><p>Place all eight pieces without overlaps. The puzzle is solved when every free cell is covered.</p></div></div>
-          <div class="step"><b>4</b><div><h2>Return each day</h2><p>The Daily Challenge awards stars once per day and extends your streak. Spend stars to unlock new visual themes.</p></div></div>
-        </section>
-        <section class="reward"><h2>Star rewards</h2><div class="reward-grid"><div><strong>★★★</strong><span>Finish in 1 minute or less</span></div><div><strong>★★</strong><span>Finish after 1 minute</span></div><div><strong>★</strong><span>Finish with help</span></div></div></section>
-      </article>
-      <article data-content="ru" hidden>
-        <header class="hero"><span class="eyebrow">QYBEQ · ПРАВИЛА</span><h1>Как играть</h1><p class="intro">Шесть координатных кубиков создают новое поле. Разместите восемь фигур на свободных клетках, не оставив пустого места.</p></header>
-        <section class="steps">
-          <div class="step"><b>1</b><div><h2>Бросьте кубики</h2><p>Каждый кубик указывает заблокированную координату на поле 6×6. Фигуры не могут закрывать эти клетки.</p></div></div>
-          <div class="step"><b>2</b><div><h2>Перемещайте фигуры</h2><p>Зажмите фигуру и перетащите её на поле. Короткое нажатие поворачивает её по часовой стрелке. Кнопка отражения доступна для подходящих фигур.</p></div></div>
-          <div class="step"><b>3</b><div><h2>Заполните квадрат</h2><p>Разместите все восемь фигур без пересечений. Головоломка решена, когда закрыта каждая свободная клетка.</p></div></div>
-          <div class="step"><b>4</b><div><h2>Возвращайтесь каждый день</h2><p>Задание дня приносит звёзды один раз в сутки и продолжает серию. Звёзды открывают новые темы оформления.</p></div></div>
-        </section>
-        <section class="reward"><h2>Награда</h2><div class="reward-grid"><div><strong>★★★</strong><span>Решение за 1 минуту или быстрее</span></div><div><strong>★★</strong><span>Решение дольше 1 минуты</span></div><div><strong>★</strong><span>Решение с помощью</span></div></div></section>
-      </article>
-    </main>
-    <script>
-      const buttons=[...document.querySelectorAll('[data-language]')]
-      const contents=[...document.querySelectorAll('[data-content]')]
-      const setLanguage=(language)=>{document.documentElement.lang=language;buttons.forEach((button)=>button.setAttribute('aria-pressed',String(button.dataset.language===language)));contents.forEach((content)=>{content.hidden=content.dataset.content!==language});document.querySelector('.back').setAttribute('aria-label',language==='ru'?'Назад':'Back');try{localStorage.setItem('qybeq.language.v1',language)}catch{}}
-      buttons.forEach((button)=>button.addEventListener('click',()=>setLanguage(button.dataset.language)))
-      let saved=null;try{saved=localStorage.getItem('qybeq.language.v1')}catch{}
-      setLanguage(saved||(navigator.language.toLowerCase().startsWith('ru')?'ru':'en'))
-    </script>
-  </body>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#090d13" />
+  <meta name="description" content="Learn Qybeq with six short interactive lessons." />
+  <link rel="icon" type="image/png" href="./qybeq-icon.png" />
+  <title>Qybeq — How to play</title>
+  <style>
+    :root{color-scheme:dark;font-family:ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#edf4f7;background:#090d13;--accent:#79dfda;--muted:#9aa6b4;--line:rgba(255,255,255,.11)}
+    *{box-sizing:border-box}body{min-height:100vh;min-height:100svh;margin:0;overflow-x:hidden;background:radial-gradient(circle at 15% -10%,rgba(60,197,194,.14),transparent 32rem),radial-gradient(circle at 90% 15%,rgba(121,92,233,.12),transparent 34rem),#090d13}button,a{font:inherit}button{color:inherit;cursor:pointer}button:focus-visible,a:focus-visible{outline:3px solid rgba(84,214,212,.86);outline-offset:3px}
+    .shell{width:min(860px,calc(100% - 32px));min-height:100vh;min-height:100svh;margin:auto;padding:max(18px,env(safe-area-inset-top)) 0 max(18px,env(safe-area-inset-bottom));display:grid;grid-template-rows:auto minmax(0,1fr) auto;gap:12px}.topbar{display:grid;grid-template-columns:44px 1fr auto;gap:14px;align-items:center}.back{display:grid;width:44px;height:44px;place-items:center;border:1px solid var(--line);border-radius:50%;color:#edf4f7;background:rgba(255,255,255,.055);text-decoration:none;font-size:20px}.title{margin:0;font-size:clamp(19px,4vw,27px)}.top-actions{display:flex;align-items:center;gap:8px}.counter{color:var(--muted);font-size:13px;font-variant-numeric:tabular-nums}.languages{display:flex;gap:2px;padding:3px;border:1px solid var(--line);border-radius:999px;background:rgba(255,255,255,.035)}.languages button{min-height:30px;padding:0 8px;border:0;border-radius:999px;color:var(--muted);background:transparent;font-size:10px;font-weight:800}.languages button[aria-pressed="true"]{color:#061313;background:var(--accent)}
+    .lesson{min-height:0;display:grid;align-content:center;justify-items:center;padding:8px 0;text-align:center}.visual{width:min(100%,390px);height:min(46vh,390px);min-height:255px;display:grid;place-items:center;overflow:hidden}.lesson-copy{max-width:510px;min-height:108px}.eyebrow{color:var(--accent);font-size:10px;font-weight:850;letter-spacing:.26em}.lesson h2{margin:10px 0 8px;font-size:clamp(25px,6vw,36px);letter-spacing:-.02em}.lesson p{margin:0;color:#aeb8c4;font-size:clamp(14px,2.5vw,16px);line-height:1.55}
+    .controls{display:grid;grid-template-columns:98px 1fr 98px;gap:12px;align-items:center}.nav-button{min-height:44px;padding:0 14px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.055);font-weight:750}.nav-button:disabled{opacity:.25;cursor:default}.nav-button.primary{color:#071414;border-color:transparent;background:linear-gradient(135deg,#8cf0e7,#51cecf)}.dots{display:flex;justify-content:center;gap:6px}.dot{width:6px;height:6px;border-radius:99px;background:rgba(255,255,255,.19);transition:width .2s ease,background .2s ease}.dot.active{width:19px;background:#edf4f7}
+    .mini-board{position:relative;width:min(82vw,310px);aspect-ratio:1;display:grid;grid-template-columns:repeat(6,1fr);gap:1.5%;padding:3.4%;border:1px solid rgba(109,193,216,.46);border-radius:7%;background:linear-gradient(145deg,#2a4857,#172c38);box-shadow:inset 0 2px rgba(255,255,255,.08),0 24px 50px rgba(0,0,0,.3)}.mini-cell{min-width:0;border-radius:17%;background:#0d202c;box-shadow:inset 0 2px 4px rgba(0,0,0,.48)}.mini-cell.blocked{display:grid;place-items:center;color:#19384a;background:linear-gradient(145deg,#f3faff,#cde5f2);box-shadow:inset 0 0 0 2px rgba(91,135,158,.2),0 3px #94afbd;font-size:clamp(9px,2.7vw,14px);font-weight:900;transform:scaleY(.92)}.mini-cell.filled{background:var(--cell-color);box-shadow:inset 0 2px rgba(255,255,255,.36),inset 0 -4px rgba(0,0,0,.17)}
+    .pieces-cloud{width:min(88vw,360px);display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:18px 22px}.piece-hit{width:220px;height:220px;display:grid;place-items:center;padding:0;border:0;background:transparent;touch-action:manipulation}.piece{--cell:44px;position:relative;width:calc(var(--cols) * var(--cell));height:calc(var(--rows) * var(--cell));display:grid;grid-template-columns:repeat(var(--cols),var(--cell));grid-template-rows:repeat(var(--rows),var(--cell));filter:drop-shadow(0 10px 10px rgba(0,0,0,.3))}.piece-cell{width:calc(var(--cell) + 1px);height:calc(var(--cell) + 1px);margin:-.5px;border:2px solid rgba(255,255,255,.3);border-radius:12px;background:linear-gradient(155deg,color-mix(in srgb,white 35%,var(--piece-color)),var(--piece-color) 52%,color-mix(in srgb,black 22%,var(--piece-color)));box-shadow:inset 0 5px rgba(255,255,255,.18),inset 0 -5px rgba(0,0,0,.13)}.pieces-cloud .piece{--cell:25px}.pieces-cloud .piece-cell{border-radius:8px}
+    .demo-wrap{display:grid;justify-items:center;gap:10px}.demo-tip{min-height:28px;padding:6px 11px;border:1px solid rgba(121,223,218,.25);border-radius:999px;color:var(--accent);background:rgba(121,223,218,.06);font-size:11px;font-weight:800}.demo-piece-art.turning{animation:turn .22s cubic-bezier(.2,.8,.25,1)}.demo-piece-art.flipping{animation:flip .28s ease-in-out}@keyframes turn{from{transform:rotate(-90deg) scale(.84);opacity:.65}}@keyframes flip{50%{transform:perspective(400px) rotateY(90deg);opacity:.58}}.flip-button{min-width:132px;min-height:42px;border:1px solid var(--line);border-radius:13px;background:rgba(255,255,255,.07);font-weight:750}
+    .placement-stage{position:relative;width:min(90vw,360px);display:grid;justify-items:center;gap:14px}.placement-stage .mini-board{width:min(69vw,265px)}.drop-target{position:absolute;z-index:3;left:calc(50% - min(69vw,265px)/2 + min(69vw,265px)*.034);top:calc(min(69vw,265px)*.034);width:calc((min(69vw,265px)*.932)*.6667);height:calc((min(69vw,265px)*.932)*.1667);border:2px dashed var(--accent);border-radius:9px;background:rgba(121,223,218,.09);pointer-events:none;animation:target-pulse .8s ease-in-out infinite alternate}@keyframes target-pulse{to{background:rgba(121,223,218,.18);box-shadow:0 0 16px rgba(121,223,218,.26)}}.place-piece{padding:6px;border:0;background:transparent;touch-action:none}.place-piece .piece,.drag-copy{--cell:35px}.place-piece.held{opacity:.18}.drag-copy{position:fixed;z-index:100;pointer-events:none;transform:translate(-50%,-50%)}.placement-success{min-height:20px;color:var(--accent);font-size:12px;font-weight:800}.placement-stage.placed .drop-target{display:none}.placement-stage.placed .place-piece{visibility:hidden}.placement-stage.placed .mini-cell.target-cell{background:linear-gradient(155deg,#8ff1eb,#36bebb 55%,#18878a);box-shadow:inset 0 4px rgba(255,255,255,.3),inset 0 -4px rgba(0,0,0,.15)}
+    @media(max-height:700px){.visual{height:310px;min-height:230px}.lesson-copy{min-height:94px}.lesson h2{margin-top:7px}}@media(max-width:430px){.shell{width:calc(100% - 28px)}.visual{width:100%}.controls{grid-template-columns:88px 1fr 88px;gap:8px}.nav-button{padding:0 9px;font-size:13px}}@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition:none!important}}
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <nav class="topbar" aria-label="Page navigation"><a class="back" href="./" aria-label="Back">←</a><h1 class="title">How to play</h1><div class="top-actions"><span class="counter" aria-live="polite">1/6</span><div class="languages" aria-label="Language"><button type="button" data-language="en">English</button><button type="button" data-language="ru">Русский</button></div></div></nav>
+    <section class="lesson"><div class="visual" id="visual"></div><div class="lesson-copy"><span class="eyebrow">QYBEQ · LESSON</span><h2 id="lesson-title"></h2><p id="lesson-body"></p></div></section>
+    <nav class="controls" aria-label="Lesson navigation"><button class="nav-button" id="previous" type="button">Back</button><div class="dots" aria-hidden="true"></div><button class="nav-button primary" id="next" type="button">Next</button></nav>
+  </main>
+  <script>
+    const blocked=[['A6',0,5],['B2',1,1],['C5',2,4],['D3',3,2],['E2',4,1],['F4',5,3]]
+    const pieces={line4:[[0,0],[1,0],[2,0],[3,0]],elbow4:[[0,0],[1,0],[2,0],[2,1]],tee:[[0,0],[0,1],[0,2],[1,1]],square:[[0,0],[0,1],[1,0],[1,1]],zigzag:[[0,1],[0,2],[1,0],[1,1]],flare:[[0,1],[0,2],[1,0],[1,1],[2,1]],elbow3:[[0,0],[1,0],[1,1]],domino:[[0,0],[0,1]]}
+    const colors={line4:'#3fc9cf',elbow4:'#ff914d',tee:'#679bef',square:'#ffd23f',zigzag:'#9bd33b',flare:'#9b6bdf',elbow3:'#ed5792',domino:'#61ce98'}
+    const strings={
+      en:{page:'How to play',eyebrow:'QYBEQ · LESSON',back:'Back',next:'Next',done:'Done',tapRotate:'Tap the piece',flipAction:'⇋ Flip',dragAction:'Drag the piece onto the outline',placed:'Great — the piece snapped to the grid',lessons:[['The board','Every puzzle starts with six dice — one for each row, A to F. Each die blocks one cell in its row. Blocked cells stay empty.','board'],['Your pieces','Eight pieces, thirty squares — exactly enough to cover every cell the dice leave free.','pieces'],['Rotate','Tap a piece in the tray to turn it a quarter turn. Try it here.','rotate'],['Flip','Some pieces can also be mirrored with Flip. It is optional: every puzzle can be solved by rotating alone.','flip'],['Place','Press and drag a piece onto the board. It snaps to the grid; the outline shows where it will land.','place'],['Fill the board','Place all eight pieces so every free cell is covered with no gaps. Any complete arrangement solves the puzzle.','fill']]},
+      ru:{page:'Как играть',eyebrow:'QYBEQ · УРОК',back:'Назад',next:'Далее',done:'Готово',tapRotate:'Нажмите на фигуру',flipAction:'⇋ Отразить',dragAction:'Перетащите фигуру на контур',placed:'Отлично — фигура встала по сетке',lessons:[['Игровое поле','Каждая головоломка начинается с шести кубиков — по одному для каждого ряда от A до F. Каждый кубик закрывает одну клетку в своём ряду.','board'],['Ваши фигуры','Восемь фигур и тридцать квадратов — ровно столько, чтобы закрыть все свободные клетки.','pieces'],['Поворот','Коснитесь фигуры внизу, чтобы повернуть её на четверть оборота. Попробуйте здесь.','rotate'],['Отражение','Некоторые фигуры можно отразить кнопкой «Отразить». Это необязательно: любую головоломку можно решить одними поворотами.','flip'],['Размещение','Зажмите фигуру и перетащите её на поле. Она встанет по сетке; контур показывает место установки.','place'],['Заполните поле','Разместите все восемь фигур так, чтобы закрыть каждую свободную клетку без пробелов.','fill']]}
+    }
+    let language='en',index=0,turns=0,mirrored=false
+    try{language=localStorage.getItem('qybeq.language.v1')||(navigator.language.toLowerCase().startsWith('ru')?'ru':'en')}catch{}
+    if(!strings[language])language='en'
+    const $=(selector)=>document.querySelector(selector)
+    const normalize=(cells)=>{const minR=Math.min(...cells.map(c=>c[0])),minC=Math.min(...cells.map(c=>c[1]));return cells.map(([r,c])=>[r-minR,c-minC]).sort((a,b)=>a[0]-b[0]||a[1]-b[1])}
+    const rotate=(cells)=>normalize(cells.map(([r,c])=>[c,-r]))
+    const mirror=(cells)=>normalize(cells.map(([r,c])=>[r,-c]))
+    const oriented=(cells,quarterTurns=0,isMirrored=false)=>{let result=normalize(cells);if(isMirrored)result=mirror(result);for(let i=0;i<quarterTurns;i++)result=rotate(result);return result}
+    function pieceElement(cells,color,extra=''){const rows=Math.max(...cells.map(c=>c[0]))+1,cols=Math.max(...cells.map(c=>c[1]))+1,root=document.createElement('div');root.className=`piece ${extra}`;root.style.setProperty('--rows',rows);root.style.setProperty('--cols',cols);root.style.setProperty('--piece-color',color);cells.forEach(([row,col])=>{const cell=document.createElement('i');cell.className='piece-cell';cell.style.gridRow=row+1;cell.style.gridColumn=col+1;root.append(cell)});return root}
+    function boardElement(filled=false,target=false){const board=document.createElement('div');board.className='mini-board';const blockedMap=new Map(blocked.map(([label,row,col])=>[`${row}:${col}`,label])),palette=['#3fc9cf','#ff914d','#679bef','#ffd23f','#9bd33b','#9b6bdf','#ed5792','#61ce98'],owner=[0,0,0,0,-1,-1,1,-1,2,2,-1,3,1,4,4,-1,-1,3,1,4,-1,5,5,3,6,-1,5,5,7,3,6,6,6,-1,7,7];for(let n=0;n<36;n++){const cell=document.createElement('span'),row=Math.floor(n/6),col=n%6,label=blockedMap.get(`${row}:${col}`);cell.className='mini-cell';if(label){cell.classList.add('blocked');cell.textContent=label}else if(filled){cell.classList.add('filled');cell.style.setProperty('--cell-color',palette[Math.max(0,owner[n])])}if(target&&row===0&&col<4)cell.classList.add('target-cell');board.append(cell)}return board}
+    function animateClass(node,name){node.classList.remove(name);void node.offsetWidth;node.classList.add(name)}
+    function renderVisual(kind){const visual=$('#visual');visual.replaceChildren();if(kind==='board'){visual.append(boardElement());return}if(kind==='pieces'){const cloud=document.createElement('div');cloud.className='pieces-cloud';Object.entries(pieces).forEach(([id,cells])=>cloud.append(pieceElement(cells,colors[id])));visual.append(cloud);return}if(kind==='rotate'||kind==='flip'){const wrap=document.createElement('div');wrap.className='demo-wrap';const button=document.createElement('button');button.type='button';button.className='piece-hit';button.setAttribute('aria-label',strings[language].tapRotate);button.dataset.orientation=String(turns);const art=document.createElement('div');art.className='demo-piece-art';art.append(pieceElement(oriented(kind==='rotate'?pieces.elbow4:pieces.zigzag,turns,mirrored),kind==='rotate'?colors.elbow4:colors.zigzag));button.append(art);button.onclick=()=>{turns=(turns+1)%4;renderVisual(kind);animateClass($('.demo-piece-art'),'turning')};wrap.append(button);if(kind==='rotate'){const tip=document.createElement('span');tip.className='demo-tip';tip.textContent=strings[language].tapRotate;wrap.append(tip)}if(kind==='flip'){const flip=document.createElement('button');flip.type='button';flip.className='flip-button';flip.textContent=strings[language].flipAction;flip.dataset.mirrored=String(mirrored);flip.onclick=()=>{mirrored=!mirrored;renderVisual(kind);animateClass($('.demo-piece-art'),'flipping')};wrap.append(flip)}visual.append(wrap);return}if(kind==='place'){const stage=document.createElement('div');stage.className='placement-stage';stage.append(boardElement(false,true));const target=document.createElement('span');target.className='drop-target';stage.append(target);const source=document.createElement('button');source.type='button';source.className='place-piece';source.setAttribute('aria-label',strings[language].dragAction);source.append(pieceElement(oriented(pieces.line4,1),colors.line4));stage.append(source);const status=document.createElement('span');status.className='placement-success';status.textContent=strings[language].dragAction;stage.append(status);source.onpointerdown=(event)=>{event.preventDefault();source.setPointerCapture(event.pointerId);source.classList.add('held');const copy=pieceElement(oriented(pieces.line4,1),colors.line4,'drag-copy');document.body.append(copy);const move=(x,y)=>{copy.style.left=`${x}px`;copy.style.top=`${y}px`};move(event.clientX,event.clientY);source.onpointermove=(e)=>move(e.clientX,e.clientY);source.onpointerup=(e)=>{const rect=target.getBoundingClientRect(),hit=e.clientX>=rect.left&&e.clientX<=rect.right&&e.clientY>=rect.top&&e.clientY<=rect.bottom;copy.remove();source.classList.remove('held');source.onpointermove=null;source.onpointerup=null;if(hit){stage.classList.add('placed');status.textContent=strings[language].placed;status.dataset.complete='true'}}};visual.append(stage);return}visual.append(boardElement(true))}
+    function render(){const text=strings[language],lesson=text.lessons[index];document.documentElement.lang=language;document.title=`Qybeq — ${text.page}`;$('.title').textContent=text.page;$('.back').setAttribute('aria-label',text.back);$('.counter').textContent=`${index+1}/${text.lessons.length}`;document.querySelectorAll('[data-language]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.language===language)));$('.eyebrow').textContent=text.eyebrow;$('#lesson-title').textContent=lesson[0];$('#lesson-body').textContent=lesson[1];$('#previous').textContent=text.back;$('#previous').disabled=index===0;$('#next').textContent=index===text.lessons.length-1?text.done:text.next;$('.dots').replaceChildren(...text.lessons.map((_,i)=>{const dot=document.createElement('i');dot.className=`dot${i===index?' active':''}`;return dot}));turns=0;mirrored=false;renderVisual(lesson[2])}
+    document.querySelectorAll('[data-language]').forEach(button=>button.onclick=()=>{language=button.dataset.language;try{localStorage.setItem('qybeq.language.v1',language)}catch{}render()});$('#previous').onclick=()=>{if(index>0){index--;render()}};$('#next').onclick=()=>{if(index<strings[language].lessons.length-1){index++;render()}else location.href='./'};document.addEventListener('keydown',(event)=>{if(event.key==='ArrowLeft')$('#previous').click();if(event.key==='ArrowRight')$('#next').click()});render()
+  </script>
+</body>
 </html>

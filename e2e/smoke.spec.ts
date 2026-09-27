@@ -32,6 +32,38 @@ test('opens the bilingual how-to-play page from the menu', async ({ page }) => {
   await expect(page.getByRole('link', { name: 'Назад' })).toBeVisible()
 })
 
+test('teaches rotate, flip and drag with interactive lessons', async ({ page }) => {
+  await page.goto('./how-to-play.html')
+  await page.getByRole('button', { name: 'English' }).click()
+  await expect(page.getByRole('heading', { name: 'The board' })).toBeVisible()
+  await page.getByRole('button', { name: 'Next' }).click()
+  await expect(page.getByRole('heading', { name: 'Your pieces' })).toBeVisible()
+  await page.getByRole('button', { name: 'Next' }).click()
+
+  const rotateDemo = page.getByRole('button', { name: 'Tap the piece' })
+  await expect(rotateDemo).toHaveAttribute('data-orientation', '0')
+  await rotateDemo.click()
+  await expect(page.getByRole('button', { name: 'Tap the piece' })).toHaveAttribute('data-orientation', '1')
+  await page.getByRole('button', { name: 'Next' }).click()
+
+  const flip = page.getByRole('button', { name: /flip/i })
+  await expect(flip).toHaveAttribute('data-mirrored', 'false')
+  await flip.click()
+  await expect(page.getByRole('button', { name: /flip/i })).toHaveAttribute('data-mirrored', 'true')
+  await page.getByRole('button', { name: 'Next' }).click()
+
+  const piece = page.getByRole('button', { name: /drag the piece/i })
+  const target = page.locator('.drop-target')
+  const pieceBox = await piece.boundingBox()
+  const targetBox = await target.boundingBox()
+  if (!pieceBox || !targetBox) throw new Error('Tutorial drag geometry is unavailable')
+  await page.mouse.move(pieceBox.x + pieceBox.width / 2, pieceBox.y + pieceBox.height / 2)
+  await page.mouse.down()
+  await page.mouse.move(targetBox.x + targetBox.width / 2, targetBox.y + targetBox.height / 2, { steps: 8 })
+  await page.mouse.up()
+  await expect(page.locator('.placement-success')).toHaveAttribute('data-complete', 'true')
+})
+
 test('opens the privacy policy from the main page', async ({ page }) => {
   await page.goto('./')
   await page.getByRole('dialog', { name: /help improve qybeq/i }).getByRole('link', { name: /privacy policy/i }).click()
@@ -93,8 +125,8 @@ test('shows one non-destructive hint and has no solution shortcut', async ({ pag
   await hintButton.click()
 
   await expect(page.locator('.hint-target')).toBeVisible()
-  await expect(page.getByRole('status')).toHaveText(/place line at a1/i)
   await expect(page.getByRole('button', { name: /2 hints left/i })).toBeVisible()
+  await expect(page.locator('.hint-caption')).toHaveCount(0)
   await expect(page.locator('.board-piece')).toHaveCount(0)
   await expect(page.getByRole('dialog', { name: /puzzle complete/i })).toHaveCount(0)
 

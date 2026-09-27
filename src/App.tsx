@@ -109,7 +109,7 @@ export default function App() {
         <div className="menu-progress-summary">
           <div className="menu-progress-value"><span aria-hidden="true">★</span><b>{progress.availableStars}</b><small>{text.stars}</small></div>
           <i />
-          <div className="menu-progress-value"><span className="streak-flame" aria-hidden="true">◆</span><b>{currentDailyStreak(progress)}</b><small>{text.currentStreak}</small></div>
+          <div className="menu-progress-value"><span className="streak-flame" aria-hidden="true">🔥</span><b>{currentDailyStreak(progress)}</b><small>{text.currentStreak}</small></div>
         </div>
         <div className="menu-actions">
           <button className="daily-menu-button" type="button" onClick={() => startGame('daily')}><span><small>{text.dailyChallenge}</small><b>{text.dailyReady}</b></span><strong>→</strong></button>
