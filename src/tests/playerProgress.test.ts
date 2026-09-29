@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest'
-import { themes } from '../cosmetics/themes'
+import { presets as themes } from '../cosmetics/skins'
 import { awardCompletion, currentDailyStreak, loadPlayerProgress, purchaseTheme, savePlayerProgress } from '../progress/playerProgress'
 
 describe('player progress', () => {

@@ -21,6 +21,14 @@ export class StableRandom {
     if (!Number.isInteger(max) || max <= 0) throw new RangeError('max must be a positive integer')
     return this.next32() % max
   }
+
+  nextDouble(): number {
+    return this.next32() / 0x100000000
+  }
+
+  nextBool(): boolean {
+    return (this.next32() & 1) === 1
+  }
 }
 
 export function dailyKey(date: Date): string {

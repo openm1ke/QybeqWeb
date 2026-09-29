@@ -1,4 +1,4 @@
-import type { ThemePreset } from '../cosmetics/themes'
+import type { ThemePreset } from '../cosmetics/skins'
 
 const storageKey = 'qybeq.progress.v1'
 
@@ -93,3 +93,28 @@ export function currentDailyStreak(progress: PlayerProgress, now = new Date()): 
 }
 
 export const playerProgressStorageKey = storageKey
+
+/** The longest run of consecutive days with a completed Daily Challenge. */
+export function bestDailyStreak(progress: PlayerProgress): number {
+  const days = Object.keys(progress.dailyBestStars)
+    .map((key) => {
+      const [year, month, day] = key.split('-').map(Number)
+      return Date.UTC(year, month - 1, day) / 86_400_000
+    })
+    .filter(Number.isFinite)
+    .sort((a, b) => a - b)
+  let best = 0
+  let run = 0
+  let previous = Number.NaN
+  for (const day of days) {
+    run = day === previous + 1 ? run + 1 : 1
+    best = Math.max(best, run)
+    previous = day
+  }
+  return best
+}
+
+/** Today's best Daily result (1–3 stars), or 0 if not yet solved. */
+export function todaysDailyStars(progress: PlayerProgress, now = new Date()): number {
+  return progress.dailyBestStars[localDayKey(now)] ?? 0
+}
