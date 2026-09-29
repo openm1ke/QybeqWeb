@@ -1,4 +1,5 @@
 import type { ThemePreset } from '../cosmetics/skins'
+import { storage } from '../platform/storage'
 
 const storageKey = 'qybeq.progress.v1'
 
@@ -25,7 +26,7 @@ function localDayKey(date = new Date()): string {
 
 export function loadPlayerProgress(): PlayerProgress {
   try {
-    const parsed = JSON.parse(localStorage.getItem(storageKey) ?? 'null') as Partial<PlayerProgress> | null
+    const parsed = JSON.parse(storage.getItem(storageKey) ?? 'null') as Partial<PlayerProgress> | null
     if (!parsed) return emptyProgress
     const unlocked = Array.isArray(parsed.unlockedThemeIds)
       ? parsed.unlockedThemeIds.filter((id): id is string => typeof id === 'string')
@@ -45,7 +46,7 @@ export function loadPlayerProgress(): PlayerProgress {
 }
 
 export function savePlayerProgress(progress: PlayerProgress): void {
-  try { localStorage.setItem(storageKey, JSON.stringify(progress)) } catch { /* Optional storage. */ }
+  try { storage.setItem(storageKey, JSON.stringify(progress)) } catch { /* Optional storage. */ }
 }
 
 export function awardCompletion(progress: PlayerProgress, source: 'new' | 'daily', stars: number, now = new Date()): PlayerProgress {

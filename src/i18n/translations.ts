@@ -1,3 +1,5 @@
+import { storage } from '../platform/storage'
+
 export type Language = 'en' | 'ru'
 
 export interface AppCopy {
@@ -109,6 +111,18 @@ export interface AppCopy {
   stepOf: (step: number, total: number) => string
   keyboardHelp: string
   keyboardMoveHelp: string
+  rewardedHintTitle: string
+  rewardedHintBody: string
+  hintForVideo: string
+  watchVideo: string
+  openingVideo: string
+  notNow: string
+  close: string
+  retry: string
+  videoDismissed: string
+  videoUnavailable: string
+  videoFailed: string
+  videoExpired: string
   pieceOnBoard: (piece: string, cell: string) => string
   play: string
   dailyToday: string
@@ -196,6 +210,13 @@ export const copy: Record<Language, AppCopy> = {
     stepOf: (step, total) => `Step ${step} of ${total}`,
     keyboardHelp: 'Enter pick up · R rotate · F flip · H hint · Esc pause',
     keyboardMoveHelp: 'Arrows move · R rotate · F flip · Enter place · Esc cancel',
+    rewardedHintTitle: 'Need another hint?', rewardedHintBody: 'Watch a short video to reveal one placement.',
+    hintForVideo: 'No free hints left. Watch a video for one more hint',
+    watchVideo: 'Watch video', openingVideo: 'Opening video…', notNow: 'Not now', close: 'Close', retry: 'Retry',
+    videoDismissed: 'The video was closed early, so no hint this time.',
+    videoUnavailable: 'No video is available right now. Please try again later.',
+    videoFailed: 'The video couldn\'t be played. Please try again.',
+    videoExpired: 'The puzzle changed before the video ended, so nothing was added.',
     pieceOnBoard: (piece, cell) => `${piece} piece at ${cell}. Enter to move, Delete to take it back.`,
     presets: 'Presets', unlock: 'Unlock', play: 'Play', dailyToday: 'Today\'s puzzle', dailyBest: (stars) => `Best today: ${stars} stars`, howToPlayTitle: 'How to Play',
     starsLabel: (count) => `${count} stars`, solvedLabel: (count) => `${count} puzzles solved`,
@@ -254,6 +275,13 @@ export const copy: Record<Language, AppCopy> = {
     stepOf: (step, total) => `Шаг ${step} из ${total}`,
     keyboardHelp: 'Enter — взять · R — поворот · F — отражение · H — подсказка · Esc — пауза',
     keyboardMoveHelp: 'Стрелки — сдвиг · R — поворот · F — отражение · Enter — поставить · Esc — отмена',
+    rewardedHintTitle: 'Нужна ещё подсказка?', rewardedHintBody: 'Посмотрите короткое видео, чтобы открыть один ход.',
+    hintForVideo: 'Бесплатные подсказки закончились. Посмотрите видео, чтобы получить ещё одну',
+    watchVideo: 'Смотреть видео', openingVideo: 'Открываем видео…', notNow: 'Не сейчас', close: 'Закрыть', retry: 'Повторить',
+    videoDismissed: 'Видео закрыто раньше времени, подсказка не начислена.',
+    videoUnavailable: 'Сейчас видео недоступно. Попробуйте позже.',
+    videoFailed: 'Не удалось воспроизвести видео. Попробуйте ещё раз.',
+    videoExpired: 'Головоломка изменилась до конца видео, поэтому награда не добавлена.',
     pieceOnBoard: (piece, cell) => `Фигура ${piece} на ${cell}. Enter — переместить, Delete — вернуть.`,
     presets: 'Темы', unlock: 'Открыть', play: 'Играть', dailyToday: 'Сегодняшняя головоломка', dailyBest: (stars) => `Лучший результат: ${stars} зв.`, howToPlayTitle: 'Как играть',
     starsLabel: (count) => `Звёзд: ${count}`, solvedLabel: (count) => `Решено головоломок: ${count}`,
@@ -270,14 +298,24 @@ export const copy: Record<Language, AppCopy> = {
 
 const storageKey = 'qybeq.language.v1'
 
-export function loadLanguage(): Language {
-  try {
-    const saved = localStorage.getItem(storageKey)
-    if (saved === 'en' || saved === 'ru') return saved
-  } catch { /* Optional storage. */ }
-  return navigator.language.toLowerCase().startsWith('ru') ? 'ru' : 'en'
+/**
+ * The language a player picked in Settings wins; otherwise the one the
+ * platform reports (the Yandex Games SDK, or the browser on the web).
+ * Languages without a translation fall back as Yandex Games does: the
+ * CIS languages to Russian, everything else to English.
+ */
+export function loadLanguage(detected: string | null = typeof navigator === 'undefined' ? null : navigator.language): Language {
+  const saved = storage.getItem(storageKey)
+  if (saved === 'en' || saved === 'ru') return saved
+  return languageFor(detected)
 }
 
+export function languageFor(code: string | null): Language {
+  const base = (code ?? '').toLowerCase().split(/[-_]/)[0]
+  return ['ru', 'be', 'kk', 'uk', 'uz', 'hy', 'az', 'ky', 'tg', 'tk'].includes(base) ? 'ru' : 'en'
+}
+
+/** Remembers a language the player chose themselves. */
 export function saveLanguage(language: Language): void {
-  try { localStorage.setItem(storageKey, language) } catch { /* Optional storage. */ }
+  storage.setItem(storageKey, language)
 }

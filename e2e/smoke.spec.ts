@@ -85,6 +85,16 @@ test('rotates a tray piece clockwise on tap without moving the tray', async ({ p
   expect(await page.locator('.tray-slot').first().boundingBox()).toEqual(before)
 })
 
+test('keyboard letters work in any layout', async ({ page }) => {
+  await startPuzzle(page)
+  const line = page.locator('[data-piece="line4"]')
+  await expect(page.locator('.tray-slot').first()).not.toHaveAttribute('style', /translateY/)
+  await line.focus()
+  // R on a Russian layout types «к»; the physical key still rotates.
+  await line.dispatchEvent('keydown', { key: 'к', code: 'KeyR', bubbles: true })
+  await expect(line).toHaveAttribute('aria-label', /90°/)
+})
+
 test('shows a dashed hint outline and counts hints down', async ({ page }) => {
   await startPuzzle(page)
   await page.getByRole('button', { name: /3 hints left/i }).click()

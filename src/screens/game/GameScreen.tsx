@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type KeyboardEvent as ReactKeyboardEvent, type PointerEvent as ReactPointerEvent } from 'react'
-import { createPortal } from 'react-dom'
+import { createPortal, flushSync } from 'react-dom'
 import { trackGoal } from '../../analytics/metrika'
 import { gameAudio } from '../../audio/audioService'
 import { Icon } from '../../components/Icon'
@@ -31,6 +31,9 @@ import { DiceRollLayer } from './DiceRollLayer'
 import { headerHeight, resolveLayout, trayBarHeight } from './metrics'
 import { Tray, type TraySlotState } from './Tray'
 import { prefersReducedMotion } from './useTween'
+import { platform } from '../../platform'
+import { storage } from '../../platform/storage'
+import { RewardedOfferSheet, type RewardOutcome } from './RewardedOfferSheet'
 import '../../game.css'
 
 export interface PuzzleCompletion {
@@ -112,7 +115,7 @@ function dailyLevel(): PuzzleLevel {
 
 function loadTips(): { rotate: boolean; place: boolean } {
   try {
-    const value = JSON.parse(localStorage.getItem(tipsKey) ?? '{}') as Partial<Record<'rotate' | 'place', boolean>>
+    const value = JSON.parse(storage.getItem(tipsKey) ?? '{}') as Partial<Record<'rotate' | 'place', boolean>>
     return { rotate: value.rotate === true, place: value.place === true }
   } catch {
     return { rotate: false, place: false }
@@ -163,7 +166,8 @@ export function GameScreen({ text, source: initialSource, resume = false, onComp
   const [result, setResult] = useState<{ award: CompletionAward | null; elapsedMs: number; assistanceUsed: boolean } | null>(null)
   const [resultReady, setResultReady] = useState(false)
   const [viewingBoard, setViewingBoard] = useState(false)
-  const [menu, setMenu] = useState<null | 'menu' | 'restart' | 'new'>(null)
+  const [menu, setMenu] = useState<null | 'menu' | 'restart' | 'new' | 'hint'>(null)
+  const [offer, setOffer] = useState<{ busy: boolean; outcome: Exclude<RewardOutcome, 'granted'> | null }>({ busy: false, outcome: null })
   const [held, setHeld] = useState<KeyHold | null>(null)
   const [keyboardMode, setKeyboardMode] = useState(false)
 
@@ -178,6 +182,13 @@ export function GameScreen({ text, source: initialSource, resume = false, onComp
     snapshotRef.current = snapshot
   }, [snapshot])
   const nonce = useRef(0)
+  const mounted = useRef(true)
+  useEffect(() => {
+    mounted.current = true
+    return () => {
+      mounted.current = false
+    }
+  }, [])
   const assistanceUsed = useRef(restored?.assistanceUsed ?? false)
   const firstPlacementTracked = useRef(restored != null && Object.keys(restored.snapshot.placements).length > 0)
   const solvedBefore = useRef(false)
@@ -253,14 +264,35 @@ export function GameScreen({ text, source: initialSource, resume = false, onComp
     }
   }, [initialSource, restored])
 
+  // The clock runs while a puzzle is in play with no sheet open, the tab
+  // is visible and the platform has not paused the game (an ad, a dialog of
+  // its own). Platform and tab events read the latest screen state through
+  // a ref: Yandex Games can send game_api_resume in the same moment a sheet
+  // closes, and a stale closure would leave the clock stopped.
+  const clockAllowed = phase === 'play' && !solved && menu == null
+  const clockAllowedRef = useRef(clockAllowed)
+  useLayoutEffect(() => {
+    clockAllowedRef.current = clockAllowed
+  }, [clockAllowed])
+  const syncClock = useCallback(() => {
+    if (clockAllowedRef.current && !document.hidden && !platform.paused) resumeClock()
+    else pauseClock()
+  }, [pauseClock, resumeClock])
   useEffect(() => {
-    const onHide = () => {
-      if (document.hidden) pauseClock()
-      else if (phase === 'play' && !solved && menu == null) resumeClock()
+    document.addEventListener('visibilitychange', syncClock)
+    const unsubscribe = platform.onPauseChange(syncClock)
+    return () => {
+      document.removeEventListener('visibilitychange', syncClock)
+      unsubscribe()
     }
-    document.addEventListener('visibilitychange', onHide)
-    return () => document.removeEventListener('visibilitychange', onHide)
-  }, [phase, solved, menu, pauseClock, resumeClock])
+  }, [syncClock])
+
+  // Gameplay markup (Yandex Games GameplayAPI): a puzzle is being played
+  // while it is on the board, unsolved and no sheet is open.
+  useEffect(() => {
+    platform.setGameplayActive(interactive)
+  }, [interactive])
+  useEffect(() => () => platform.setGameplayActive(false), [])
 
   // ---- Saving ----------------------------------------------------------------
 
@@ -403,6 +435,17 @@ export function GameScreen({ text, source: initialSource, resume = false, onComp
 
   const activeHint = hint && !placementMatches(snapshot, snapshot.placements[hint.pieceId], hint.target) ? hint : null
 
+  /** Puts [next] on the board; [kind] says what paid for it. */
+  const showHint = (next: PlacementHint, kind: 'free' | 'rewarded' | 'ad_fallback') => {
+    const current = snapshotRef.current
+    assistanceUsed.current = true
+    setHint(next)
+    setHintNonce((n) => n + 1)
+    if (!current.placements[next.pieceId]) setSelected(next.pieceId)
+    gameAudio.playEffect('turn')
+    trackGoal('hint_shown', { level_id: current.level.id, source, piece_id: next.pieceId, kind: next.kind, paid_by: kind })
+  }
+
   const requestHint = () => {
     if (!interactive) return
     if (activeHint) {
@@ -410,16 +453,65 @@ export function GameScreen({ text, source: initialSource, resume = false, onComp
       setHintNonce((n) => n + 1)
       return
     }
-    if (hintsRemaining <= 0) return
     const next = nextPlacementHint(snapshot)
     if (!next) return
-    assistanceUsed.current = true
-    setHint(next)
-    setHintNonce((n) => n + 1)
-    setHintsRemaining((n) => Math.max(0, n - 1))
-    if (!snapshot.placements[next.pieceId]) setSelected(next.pieceId)
-    gameAudio.playEffect('turn')
-    trackGoal('hint_shown', { level_id: snapshot.level.id, source, piece_id: next.pieceId, kind: next.kind, hints_remaining: hintsRemaining - 1 })
+    if (hintsRemaining > 0) {
+      setHintsRemaining((n) => Math.max(0, n - 1))
+      showHint(next, 'free')
+      return
+    }
+    // Free hints are used up: offer one more for a short video. The clock
+    // stops while the offer (and the video) is on screen, as with the menu.
+    if (!platform.rewardedAds) return
+    setOffer({ busy: false, outcome: null })
+    pauseClock()
+    setMenu('hint')
+    trackGoal('rewarded_offer_shown', { kind: 'hint' })
+  }
+
+  const closeOffer = () => {
+    setOffer({ busy: false, outcome: null })
+    closeMenu()
+  }
+
+  /**
+   * One video, and if the platform confirms the reward, exactly one hint
+   * for the puzzle that was on the board when it was asked for (mobile
+   * `RewardedHelp.watchForHint`). A video that cannot be shown never blocks
+   * the game: the hint is given anyway; closing it early gives nothing.
+   */
+  const watchHintVideo = async () => {
+    if (offer.busy) return
+    setOffer({ busy: true, outcome: null })
+    const puzzle = snapshotRef.current.level
+    const grant = (kind: 'rewarded' | 'ad_fallback') => {
+      const current = snapshotRef.current
+      if (current.level !== puzzle || isSolved(current)) return false
+      const next = nextPlacementHint(current)
+      if (!next) return false
+      showHint(next, kind)
+      return true
+    }
+    let granted = false
+    const result = await platform.showRewardedVideo(() => {
+      granted = grant('rewarded')
+    })
+    let outcome: RewardOutcome
+    if (result === 'rewarded') outcome = granted ? 'granted' : 'expired'
+    else if (result === 'dismissed') outcome = 'dismissed'
+    else outcome = grant('ad_fallback') ? 'granted' : 'expired'
+    if (!mounted.current) return
+    if (outcome === 'granted') {
+      // Committed at once, so the clock (and a platform resume arriving
+      // right now) sees the sheet closed.
+      flushSync(() => {
+        setOffer({ busy: false, outcome: null })
+        setMenu(null)
+      })
+      syncClock()
+      return
+    }
+    setOffer({ busy: false, outcome })
   }
 
   const hintMarker: HintMarker | null = useMemo(() => {
@@ -464,7 +556,7 @@ export function GameScreen({ text, source: initialSource, resume = false, onComp
   const markTip = (tip: 'rotate' | 'place') => {
     setTips((current) => {
       const next = { ...current, [tip]: true }
-      try { localStorage.setItem(tipsKey, JSON.stringify(next)) } catch { /* Optional storage. */ }
+      try { storage.setItem(tipsKey, JSON.stringify(next)) } catch { /* Optional storage. */ }
       return next
     })
   }
@@ -789,8 +881,8 @@ export function GameScreen({ text, source: initialSource, resume = false, onComp
     setMenu('menu')
   }
   const closeMenu = () => {
-    setMenu(null)
-    if (phase === 'play' && !solved) resumeClock()
+    flushSync(() => setMenu(null))
+    syncClock()
   }
   const resetToRoll = () => {
     clearSavedGame('new')
@@ -924,6 +1016,7 @@ export function GameScreen({ text, source: initialSource, resume = false, onComp
   const onPieceKeyDown = (pieceId: string, from: 'tray' | 'board', event: ReactKeyboardEvent<HTMLElement>) => {
     if (held || !interactive) return
     const key = event.key
+    const letter = event.code
     const handled = () => {
       event.preventDefault()
       event.stopPropagation()
@@ -932,10 +1025,10 @@ export function GameScreen({ text, source: initialSource, resume = false, onComp
     if (key === 'Enter' || key === ' ') {
       handled()
       pickUp(pieceId, from)
-    } else if (from === 'tray' && (key === 'r' || key === 'R')) {
+    } else if (from === 'tray' && letter === 'KeyR') {
       handled()
       rotate(pieceId)
-    } else if (from === 'tray' && (key === 'f' || key === 'F')) {
+    } else if (from === 'tray' && letter === 'KeyF') {
       handled()
       setSelected(pieceId)
       const next = flipPiece(snapshotRef.current, pieceId)
@@ -954,6 +1047,8 @@ export function GameScreen({ text, source: initialSource, resume = false, onComp
     const onKey = (event: KeyboardEvent) => {
       if (event.ctrlKey || event.metaKey || event.altKey) return
       const key = event.key
+      // Letters by their place on the keyboard, whatever the layout.
+      const letter = event.code
       if (key === 'Tab') setKeyboardMode(true)
       if (phase === 'rolling') {
         if (key === 'Enter' || key === ' ' || key === 'Escape') {
@@ -965,7 +1060,9 @@ export function GameScreen({ text, source: initialSource, resume = false, onComp
       if (menu) {
         if (key === 'Escape') {
           event.preventDefault()
-          if (menu === 'menu') closeMenu()
+          if (menu === 'hint') {
+            if (!offer.busy) closeOffer()
+          } else if (menu === 'menu') closeMenu()
           else setMenu('menu')
         }
         return
@@ -976,10 +1073,10 @@ export function GameScreen({ text, source: initialSource, resume = false, onComp
           event.preventDefault()
           const [dr, dc] = moves[key]
           setHeld({ ...held, origin: clampOrigin({ row: held.origin.row + dr, col: held.origin.col + dc }, heldShape(held, snapshotRef.current)) })
-        } else if (key === 'r' || key === 'R') {
+        } else if (letter === 'KeyR') {
           event.preventDefault()
           reorientHeld('rotate')
-        } else if (key === 'f' || key === 'F') {
+        } else if (letter === 'KeyF') {
           event.preventDefault()
           reorientHeld('flip')
         } else if (key === 'Enter' || key === ' ') {
@@ -992,7 +1089,7 @@ export function GameScreen({ text, source: initialSource, resume = false, onComp
         return
       }
       if (!interactive) return
-      if (key === 'h' || key === 'H') {
+      if (letter === 'KeyH') {
         event.preventDefault()
         requestHint()
       } else if (key === 'Escape') {
@@ -1093,12 +1190,15 @@ export function GameScreen({ text, source: initialSource, resume = false, onComp
       <button
         type="button"
         className={`pill-button hint-pill${activeHint ? ' shown' : ''}`}
-        disabled={!interactive || (!activeHint && hintsRemaining <= 0)}
+        disabled={!interactive || (!activeHint && hintsRemaining <= 0 && !platform.rewardedAds)}
         onClick={requestHint}
-        aria-label={activeHint ? text.hintShown(text.hintsLeft(hintsRemaining)) : text.hintsLeft(hintsRemaining)}
+        aria-label={activeHint ? text.hintShown(text.hintsLeft(hintsRemaining)) : hintsRemaining <= 0 && platform.rewardedAds ? text.hintForVideo : text.hintsLeft(hintsRemaining)}
       >
         <Icon name={activeHint ? 'lightbulbRounded' : 'lightbulbOutlineRounded'} size={17} />
-        <span>{hintsRemaining}</span>
+        {/* With no free hints left, the next one comes with a video. */}
+        {hintsRemaining <= 0 && !activeHint && platform.rewardedAds
+          ? <Icon name="playCircleFillRounded" size={15} className="hint-video" />
+          : <span>{hintsRemaining}</span>}
       </button>
       <button type="button" className="pill-button" disabled={!canFlip} onClick={flip} aria-label={text.flipSelectedPiece}>
         <Icon name="flipRounded" size={17} />
@@ -1213,6 +1313,9 @@ export function GameScreen({ text, source: initialSource, resume = false, onComp
       )}
       {menu === 'new' && (
         <Confirm title={text.newPuzzleTitle} body={text.newPuzzleBody} confirm={text.newPuzzle} cancel={text.cancel} onConfirm={resetToRoll} onCancel={() => setMenu('menu')} />
+      )}
+      {menu === 'hint' && (
+        <RewardedOfferSheet text={text} busy={offer.busy} outcome={offer.outcome} onWatch={() => void watchHintVideo()} onClose={closeOffer} />
       )}
     </main>
   )

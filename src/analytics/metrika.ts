@@ -1,3 +1,5 @@
+import { storage } from '../platform/storage'
+
 const counterId = 113110265
 const preferenceKey = 'qybeq.analytics.v1'
 const scriptId = 'qybeq-yandex-metrika'
@@ -21,7 +23,7 @@ export type AnalyticsPreference = boolean | null
 
 export function loadAnalyticsPreference(): AnalyticsPreference {
   try {
-    const value = localStorage.getItem(preferenceKey)
+    const value = storage.getItem(preferenceKey)
     if (value === 'enabled') return true
     if (value === 'disabled') return false
   } catch { /* Optional storage. */ }
@@ -29,7 +31,7 @@ export function loadAnalyticsPreference(): AnalyticsPreference {
 }
 
 export function saveAnalyticsPreference(value: boolean): void {
-  try { localStorage.setItem(preferenceKey, value ? 'enabled' : 'disabled') } catch { /* Optional storage. */ }
+  try { storage.setItem(preferenceKey, value ? 'enabled' : 'disabled') } catch { /* Optional storage. */ }
 }
 
 function installQueue(): Metrika {
@@ -41,6 +43,9 @@ function installQueue(): Metrika {
 }
 
 function initialize(): void {
+  // Yandex Games builds carry no third-party scripts; this also drops the
+  // counter's URL from that bundle.
+  if (import.meta.env.VITE_PLATFORM === 'yandex') return
   if (initialized) return
   window[disabledProperty] = false
   window.dataLayer = window.dataLayer ?? []

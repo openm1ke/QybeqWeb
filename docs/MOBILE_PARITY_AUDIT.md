@@ -45,5 +45,7 @@ Responsive: phones use the mobile layout unchanged; viewports at least
 
 ## Out of scope for the web
 
-- Rewarded help (watch an ad for a solution): the web version has no ads.
+- Rewarded help on the website: it has no ads. The Yandex Games build offers
+  the mobile rewarded hint through the Yandex Games SDK (`docs/YANDEX_GAMES.md`);
+  the rewarded solution viewer is not ported.
 - Browser reminders, until Web Push is designed.

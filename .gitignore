@@ -25,3 +25,7 @@ coverage
 *.njsproj
 *.sln
 *.sw?
+
+# Yandex Games build and archives
+dist-yandex
+release

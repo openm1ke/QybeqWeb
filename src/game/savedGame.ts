@@ -3,6 +3,7 @@ import { checkPlacement, initialSnapshot } from './controller'
 import { dailyKey } from './daily'
 import { levelForRoll, rollShowing } from './dice'
 import { pieces } from './pieces'
+import { storage } from '../platform/storage'
 import type { Cell, GameSnapshot, Orientation } from './types'
 
 /**
@@ -50,7 +51,7 @@ export function saveGame(source: SavedSource, game: RestoredGame, now = new Date
     assistanceUsed: game.assistanceUsed,
   }
   try {
-    localStorage.setItem(savedGameKeys[source], JSON.stringify(record))
+    storage.setItem(savedGameKeys[source], JSON.stringify(record))
   } catch {
     /* Optional storage. */
   }
@@ -58,7 +59,7 @@ export function saveGame(source: SavedSource, game: RestoredGame, now = new Date
 
 export function clearSavedGame(source: SavedSource): void {
   try {
-    localStorage.removeItem(savedGameKeys[source])
+    storage.removeItem(savedGameKeys[source])
   } catch {
     /* Optional storage. */
   }
@@ -67,7 +68,7 @@ export function clearSavedGame(source: SavedSource): void {
 export function loadSavedGame(source: SavedSource, now = new Date()): RestoredGame | null {
   let raw: string | null
   try {
-    raw = localStorage.getItem(savedGameKeys[source])
+    raw = storage.getItem(savedGameKeys[source])
   } catch {
     return null
   }

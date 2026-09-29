@@ -252,6 +252,15 @@
   color: var(--q-accent);
 }
 
+/* With no free hints left the next one comes with a video. */
+.hint-pill .hint-video {
+  color: var(--q-accent);
+}
+
+.hint-pill:disabled .hint-video {
+  color: inherit;
+}
+
 /* Tray ------------------------------------------------------------------------------ */
 
 .tray-area {
@@ -1566,4 +1575,65 @@ button.progress-value:hover {
 
 .place-demo-caption.done {
   color: var(--q-success);
+}
+
+/* Rewarded offer (lib/game/help/help_sheets.dart) ---------------------------------------- */
+
+.reward-offer {
+  display: flex;
+  flex-direction: column;
+}
+
+.reward-badge {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+  border: 1px solid rgba(91, 140, 255, 0.35);
+  background: rgba(91, 140, 255, 0.12);
+  color: var(--q-accent);
+}
+
+.reward-badge-play {
+  position: absolute;
+  right: 7px;
+  bottom: 7px;
+}
+
+.reward-title {
+  margin: 14px 0 0;
+  font-size: 22px;
+  line-height: 1.2;
+  font-weight: 800;
+}
+
+.reward-body {
+  margin: 8px 0 0;
+  font-size: 15px;
+  line-height: 1.4;
+  color: var(--q-text-secondary);
+}
+
+.reward-status {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 16px 0 0;
+  font-size: 15px;
+  line-height: 1.4;
+  color: var(--q-text-secondary);
+}
+
+.reward-status svg {
+  flex: none;
+  margin-top: 1px;
+}
+
+.reward-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 24px;
 }

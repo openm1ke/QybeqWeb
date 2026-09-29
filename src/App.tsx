@@ -12,17 +12,22 @@ import { HowToPlay } from './screens/HowToPlay'
 import { PrimaryAction, SecondaryAction, Sheet } from './components/ui'
 import { clearSavedGame, loadSavedGame } from './game/savedGame'
 import { awardCompletion, loadPlayerProgress, purchaseTheme, savePlayerProgress } from './progress/playerProgress'
+import { platform } from './platform'
 import './App.css'
 
 type Screen = 'menu' | 'game' | 'customize' | 'settings' | 'howto'
+
+/** Analytics and links to the privacy policy: the open web build only. */
+const webExtras = import.meta.env.VITE_PLATFORM !== 'yandex'
 
 export default function App() {
   const [screen, setScreen] = useState<Screen>('menu')
   const [progress, setProgress] = useState(loadPlayerProgress)
   const [appearance, setAppearance] = useState<Appearance>(() => loadAppearance(new Set(progress.unlockedThemeIds)))
   const [audioSettings, setAudioSettings] = useState<AudioSettings>(loadAudioSettings)
-  const [language, setLanguage] = useState<Language>(loadLanguage)
-  const [analyticsPreference, setAnalyticsPreference] = useState<AnalyticsPreference>(loadAnalyticsPreference)
+  const [language, setLanguage] = useState<Language>(() => loadLanguage(platform.detectedLanguage()))
+  // Analytics (and its consent prompt) exist on the open web only.
+  const [analyticsPreference, setAnalyticsPreference] = useState<AnalyticsPreference>(() => (webExtras ? loadAnalyticsPreference() : false))
   const [gameSource, setGameSource] = useState<'new' | 'daily'>('new')
   const [resumeGame, setResumeGame] = useState(false)
   const [confirmNew, setConfirmNew] = useState(false)
@@ -34,18 +39,32 @@ export default function App() {
   }, [audioSettings])
 
   useEffect(() => {
+    // Every gesture may (re)start audio: browsers only allow it from one.
     const unlockAudio = () => gameAudio.unlock()
-    document.addEventListener('pointerdown', unlockAudio, { once: true })
-    return () => document.removeEventListener('pointerdown', unlockAudio)
+    document.addEventListener('pointerdown', unlockAudio)
+    document.addEventListener('keydown', unlockAudio)
+    return () => {
+      document.removeEventListener('pointerdown', unlockAudio)
+      document.removeEventListener('keydown', unlockAudio)
+    }
+  }, [])
+
+  useEffect(() => {
+    // The menu is up and interactive: the game can be played.
+    platform.ready()
   }, [])
 
   useEffect(() => {
     document.documentElement.lang = language
-    saveLanguage(language)
   }, [language])
 
+  const chooseLanguage = (next: Language) => {
+    setLanguage(next)
+    saveLanguage(next)
+  }
+
   useEffect(() => {
-    if (analyticsPreference !== null) setAnalyticsEnabled(analyticsPreference)
+    if (webExtras && analyticsPreference !== null) setAnalyticsEnabled(analyticsPreference)
   }, [analyticsPreference])
 
   useEffect(() => {
@@ -131,7 +150,7 @@ export default function App() {
         appearanceDetail={preset ? text.themeName(preset.id, preset.name) : text.customMix}
         onAnalyticsChange={chooseAnalytics}
         onChange={setAudioSettings}
-        onLanguage={setLanguage}
+        onLanguage={chooseLanguage}
         onCustomize={() => { trackGoal('customization_opened', { source: 'settings' }); setScreen('customize') }}
         onBack={() => setScreen('menu')}
       />
@@ -156,7 +175,7 @@ export default function App() {
         onCustomize={() => { trackGoal('customization_opened', { source: 'menu' }); setScreen('customize') }}
         onSettings={() => { trackGoal('settings_opened'); setScreen('settings') }}
         onHowToPlay={() => { trackGoal('how_to_play_opened'); setScreen('howto') }}
-        footer={<a className="menu-footer-link" href="./privacy.html">{text.privacyPolicy}</a>}
+        footer={webExtras ? <a className="menu-footer-link" href="./privacy.html">{text.privacyPolicy}</a> : null}
       />
       {confirmNew && (
         <Sheet label={text.newPuzzleTitle} onDismiss={() => setConfirmNew(false)}>
@@ -168,7 +187,7 @@ export default function App() {
           </div>
         </Sheet>
       )}
-      {analyticsPreference === null && <section className="analytics-consent" role="dialog" aria-labelledby="analytics-consent-title">
+      {webExtras && analyticsPreference === null && <section className="analytics-consent" role="dialog" aria-labelledby="analytics-consent-title">
         <div><span className="eyebrow">{text.privacy}</span><h2 id="analytics-consent-title">{text.analyticsConsentTitle}</h2><p>{text.analyticsConsentBody}</p></div>
         <div className="analytics-consent-actions"><a href="./privacy.html">{text.privacyPolicy}</a><button type="button" onClick={() => chooseAnalytics(false)}>{text.declineAnalytics}</button><button className="consent-primary" type="button" onClick={() => chooseAnalytics(true)}>{text.allowAnalytics}</button></div>
       </section>}

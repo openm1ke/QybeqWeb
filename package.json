@@ -1,12 +1,16 @@
 {
   "name": "qybeq-web",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.1.1",
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:yandex": "vite --mode yandex",
     "build": "tsc -b && vite build",
+    "build:yandex": "tsc -b && vite build --mode yandex && node scripts/package-yandex.mjs",
+    "promo:yandex": "playwright test -c playwright.promo.config.ts",
     "preview": "vite preview",
+    "preview:yandex": "vite preview --mode yandex",
     "lint": "eslint .",
     "typecheck": "tsc -b --noEmit",
     "test": "vitest run",

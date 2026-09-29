@@ -6,6 +6,9 @@ import { ScreenFrame } from './CustomizeScreen'
 import '../game.css'
 
 /** Settings in the mobile layout: titled plates of rows (`SettingsScreen`). */
+/** Analytics and the privacy policy: the open web build only. */
+const webExtras = import.meta.env.VITE_PLATFORM !== 'yandex'
+
 export function SettingsScreen({ settings, text, language, analyticsEnabled, appearanceDetail, onChange, onLanguage, onAnalyticsChange, onCustomize, onBack }: {
   settings: AudioSettings
   text: AppCopy
@@ -53,13 +56,15 @@ export function SettingsScreen({ settings, text, language, analyticsEnabled, app
             </div>
           </div>
         </Section>
-        <Section title={text.privacy}>
-          <Toggle title={text.anonymousAnalytics} detail={text.anonymousAnalyticsDescription} checked={analyticsEnabled} onChange={onAnalyticsChange} />
-          <a className="settings-row link" href="./privacy.html">
-            <RowText title={text.privacyPolicy} />
-            <Icon name="chevronRightRounded" size={24} color="#7A808C" />
-          </a>
-        </Section>
+        {webExtras && (
+          <Section title={text.privacy}>
+            <Toggle title={text.anonymousAnalytics} detail={text.anonymousAnalyticsDescription} checked={analyticsEnabled} onChange={onAnalyticsChange} />
+            <a className="settings-row link" href="./privacy.html">
+              <RowText title={text.privacyPolicy} />
+              <Icon name="chevronRightRounded" size={24} color="#7A808C" />
+            </a>
+          </Section>
+        )}
       </div>
     </ScreenFrame>
   )

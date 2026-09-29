@@ -30,6 +30,18 @@ npm install
 npm run dev
 ```
 
+## Two builds
+
+```sh
+npm run build            # the website (GitHub Pages) → dist/
+npm run build:yandex     # the Yandex Games archive → release/qybeq-yandex-games-<version>.zip
+npm run dev:yandex       # the Yandex build locally, with a stand-in for the SDK
+```
+
+The website deploys on every push to `main`; the Yandex Games archive is
+built on demand (locally or with the "Yandex Games archive" workflow) and
+uploaded in the developer console. See `docs/YANDEX_GAMES.md`.
+
 ## Verify
 
 ```sh

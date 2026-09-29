@@ -14,6 +14,7 @@ import {
   type PieceSkin,
   type ThemePreset,
 } from './skins'
+import { storage } from '../platform/storage'
 
 /**
  * The player's look: one skin per slot, chosen independently (mobile
@@ -73,7 +74,7 @@ export function loadAppearance(owned: ReadonlySet<string>): Appearance {
 
 function readStored(): string | null {
   try {
-    return localStorage.getItem(appearanceStorageKey)
+    return storage.getItem(appearanceStorageKey)
   } catch {
     return null
   }
@@ -81,7 +82,7 @@ function readStored(): string | null {
 
 export function saveAppearance(appearance: Appearance): void {
   try {
-    localStorage.setItem(
+    storage.setItem(
       appearanceStorageKey,
       JSON.stringify({ pieces: appearance.pieces.id, dice: appearance.dice.id, board: appearance.board.id }),
     )
