@@ -1,35 +1,49 @@
 # Qybeq Web: mobile parity audit
 
-Updated: 28 September 2026.
+Updated: 29 September 2026.
 
-## Implemented
+## Visual parity (branch `feat/mobile-visual-parity`)
 
-- responsive menu and playable 6×6 board;
-- all eight canonical pieces, rotation, reflection, collision checks and solver;
-- pointer controls for mouse and touch, including tap-to-rotate and hold-to-drag;
-- five mobile visual themes with star prices, purchase confirmation, persisted ownership and selection;
-- three-track music playlist, gameplay effects and persisted audio controls;
-- English and Russian interface selection with persisted browser-language fallback;
-- bilingual privacy policy and full how-to-play page;
-- animated coordinate-dice intro, elapsed timer and 1/2/3-star completion rewards;
-- persisted star wallet, solved count and Daily Challenge streak;
-- consent-first Yandex Metrica, gameplay goals and settings opt-out;
-- stable daily PRNG and reward rules at the game-engine/test level;
-- automated unit and desktop/mobile browser tests;
-- production build and GitHub Pages deployment workflow.
+The game is now drawn by ports of the Flutter painters, not by look-alikes:
 
-## Required for mobile feature parity
+- `src/rendering/` — Canvas 2D ports of `PiecePainter` (gloss, neon, ceramic,
+  satin metal, crystal and the brand's legacy finish; ghosts, hints, lift,
+  glow, tint), `SurfaceDetails`, `BoardWellsPainter`, `BlockedCellWidget`,
+  the Roll Dice die and the tumbling-die faces. The piece body is the same
+  union of inset cells and bridges as `pieceBodyPath`, so pieces are one
+  continuous body with no seams. Blur follows `MaskFilter.blur` sigma,
+  colours follow Flutter's `HSLColor`/`Color.lerp` with 8-bit rounding, and
+  the sandstone grain uses a bit-exact port of Dart's `Random(7319)`.
+- `src/game/diceRoll.ts` — `DiceRollPlan` and `dieFrameAt` value for value;
+  `src/rendering/dice3d.ts` — the painter's perspective matrices, applied to
+  face canvases with CSS `matrix3d`.
+- `src/cosmetics/skins.ts` — all five presets and their fifteen skins with
+  the mobile colours and material parameters; appearance is chosen per slot
+  (pieces, dice, board) and stored as ids.
+- Game screen: `_BoardMetrics`, header, tray bar, `TrayLayout`, lift / snap /
+  return / reject shake, placement preview, dashed hints, completion sweep
+  and wave, result panel and pause sheet.
+- Main menu with the Q mark intro, Customize (live preview, preset strip with
+  prices, per-slot skins), Settings with language.
+- How to Play: the six mobile lessons on `MiniBoard` and `PieceArt` (rotate
+  and flip demos, the Place outline — draggable on the web), in the app and
+  as `how-to-play.html` for links from Support (`?lang=en|ru`).
+- Continue: the unfinished puzzle (board, orientations, clock, hints) is
+  saved as a versioned record, rebuilt with the solver and re-validated on
+  load; a regular puzzle and today's Daily Challenge are kept apart.
+- Keyboard play: Tab to a piece, Enter to pick it up, arrows to move, R / F
+  to rotate and flip, Enter to place, Esc to cancel or pause, H for a hint,
+  Delete to send a placed piece back.
 
-1. Replace the fixed prototype board with generated coordinate-dice puzzles.
-2. Add saved game, resume/discard flow and versioned storage migrations.
-3. Connect Daily Challenge to its deterministic daily board, completed-state badge, best streak and midnight countdown.
-4. Port hint projection and solution steps; add the web rewarded-ad adapter with free fallback when unavailable.
-5. Replace the debug `Preview solution` action with the production result panel and new/view/menu actions.
-6. Add the final developer contact to the policy and provide a support page.
-7. Complete keyboard controls, screen-reader gameplay labels and real-device Safari/low-end Android performance checks.
+Numerical parity is covered by `src/tests/mobileParity.test.ts`: Dart
+`Random`, HSL shades, the Daily Challenge boards for fixed dates and the dice
+choreography for a fixed seed are compared with values produced by the
+Flutter code.
 
-Browser reminders remain intentionally out of parity until a separate Web Push service-worker and subscription service are designed.
+Responsive: phones use the mobile layout unchanged; viewports at least
+760 px wide and landscape put the tray beside the board.
 
-## Publication status
+## Out of scope for the web
 
-The current build is suitable for a public development preview and for hosting the privacy-policy URL. It is not yet the feature-complete browser equivalent of the Android/iOS application.
+- Rewarded help (watch an ad for a solution): the web version has no ads.
+- Browser reminders, until Web Push is designed.

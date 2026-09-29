@@ -1,19 +1,15 @@
 :root {
-  font-family: Inter, ui-rounded, "SF Pro Rounded", "Segoe UI", sans-serif;
-  color: #f4f8fb;
-  background: #090d13;
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  color: #f2f3f5;
+  background: #0d0e11;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
-  --bg: #090d13;
-  --text: #f5f7fa;
-  --muted: #929daa;
-  --line: rgba(255, 255, 255, .09);
-  --accent: #54d6d4;
+  color-scheme: dark;
 }
 * { box-sizing: border-box; }
 html, body, #root { min-height: 100%; }
-body { margin: 0; min-width: 320px; min-height: 100svh; background: var(--bg); }
+body { margin: 0; min-width: 320px; min-height: 100svh; background: #0d0e11; overscroll-behavior: none; }
 button, a { font: inherit; }
 button { -webkit-tap-highlight-color: transparent; }
 a { color: inherit; }

@@ -12,10 +12,11 @@ application with React, TypeScript, Vite and SVG.
 - five persisted visual themes ported from mobile;
 - three-track background playlist, volume controls and gameplay effects;
 - persisted English/Russian interface selection;
+- Continue for an unfinished puzzle and full keyboard play;
 - exact-cover solver and validated mobile reference solution;
 - stable daily PRNG and one/two/three-star rules;
 - shared versioned JSON parity fixture;
-- static privacy, support and how-to-play pages;
+- static privacy and support pages, plus the How to Play lessons as their own page;
 - Vitest, Playwright and GitHub Actions foundations.
 
 The full implementation sequence is maintained in the mobile repository at
