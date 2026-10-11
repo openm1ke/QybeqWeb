@@ -1,0 +1,26 @@
+{
+  "status": "draft",
+  "app_id": 54815710,
+  "name": "Qybeq",
+  "languages": ["ru", "en"],
+  "ads": true,
+  "in_app_purchases": false,
+  "supported_controls": ["keyboard", "touch"],
+  "game_https_url": "https://<домен-pages>/<путь-проекта>/vk/",
+  "icon_candidates": [
+    "build/releases/vk/design/icons/icon-universal-576.png",
+    "build/releases/vk/design/icons/icon-catalog-278.png",
+    "build/releases/vk/design/icons/icon-small-150.png"
+  ],
+  "screenshots": [
+    "build/releases/vk/design/screenshots/01-main-menu-1200x600.jpg",
+    "build/releases/vk/design/screenshots/02-customize-1200x600.jpg",
+    "build/releases/vk/design/screenshots/03-gameplay-1200x600.jpg"
+  ],
+  "big_snippet": "build/releases/vk/design/images/big-snippet-1120x630.jpg",
+  "favicon_candidates": [
+    "build/releases/vk/design/favicon/favicon-32.png",
+    "build/releases/vk/design/favicon/favicon-32.jpg",
+    "build/releases/vk/design/favicon/favicon-32.gif"
+  ]
+}

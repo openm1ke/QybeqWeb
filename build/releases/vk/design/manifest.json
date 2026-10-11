@@ -1,0 +1,106 @@
+[
+  {
+    "file": "favicon/favicon-32.gif",
+    "width": 32,
+    "height": 32,
+    "format": "GIF",
+    "bytes": 1444,
+    "sha256": "06b7b6cd4ee53fed3d558a5cdc9febd59761572692b8dcd4d6da4e1344e2ffcd"
+  },
+  {
+    "file": "favicon/favicon-32.jpg",
+    "width": 32,
+    "height": 32,
+    "format": "JPEG",
+    "bytes": 1005,
+    "sha256": "89278363afd15fc0079a4bd1549b3ade9e03e60450c7788e5c3ad8ce4aefcdf6"
+  },
+  {
+    "file": "favicon/favicon-32.png",
+    "width": 32,
+    "height": 32,
+    "format": "PNG",
+    "bytes": 1676,
+    "sha256": "df0cf058a6dc0b36e3a8de8f0c217e95d2381f9a9c711ed997f91b302a6f28be"
+  },
+  {
+    "file": "icons/icon-catalog-278.jpg",
+    "width": 278,
+    "height": 278,
+    "format": "JPEG",
+    "bytes": 10662,
+    "sha256": "4ff05d370c1fa3a64ce1f356f4714fa6b9c4caac86043a79e22d019af3845d7e"
+  },
+  {
+    "file": "icons/icon-catalog-278.png",
+    "width": 278,
+    "height": 278,
+    "format": "PNG",
+    "bytes": 33904,
+    "sha256": "2872b6eab2fc08838d776eab8bf4f0fa720a9f1281a6e28b7da200828801d36b"
+  },
+  {
+    "file": "icons/icon-small-150.jpg",
+    "width": 150,
+    "height": 150,
+    "format": "JPEG",
+    "bytes": 4879,
+    "sha256": "103abe8cf4b91fbf6daeedbb15af741a8f23e540419c7bf576b5cd5076d6402b"
+  },
+  {
+    "file": "icons/icon-small-150.png",
+    "width": 150,
+    "height": 150,
+    "format": "PNG",
+    "bytes": 12983,
+    "sha256": "2f45d78d0533456e014e44819619ed603da6c4dfbc370d27671b40910b6b414f"
+  },
+  {
+    "file": "icons/icon-universal-576.jpg",
+    "width": 576,
+    "height": 576,
+    "format": "JPEG",
+    "bytes": 28993,
+    "sha256": "e2fd43c521d4b7eeb55ac0271a1ba582212426c94f2d90d04e9604cec8ef50a9"
+  },
+  {
+    "file": "icons/icon-universal-576.png",
+    "width": 576,
+    "height": 576,
+    "format": "PNG",
+    "bytes": 152354,
+    "sha256": "4f1e0895b178519a56ec8efa306e5411bfdce3881b9fcfe07cda1710bd99dd98"
+  },
+  {
+    "file": "images/big-snippet-1120x630.jpg",
+    "width": 1120,
+    "height": 630,
+    "format": "JPEG",
+    "bytes": 27692,
+    "sha256": "929f626504f955da6b53595c9cff55e8307d1c112b82c33649ab4f97ee6f91c4"
+  },
+  {
+    "file": "screenshots/01-main-menu-1200x600.jpg",
+    "width": 1200,
+    "height": 600,
+    "format": "JPEG",
+    "bytes": 42192,
+    "sha256": "e1d3a1fd6a94aded8879cb30079228b0be0ac23f2223e33489f20280b1331d31"
+  },
+  {
+    "file": "screenshots/02-customize-1200x600.jpg",
+    "width": 1200,
+    "height": 600,
+    "format": "JPEG",
+    "bytes": 53475,
+    "sha256": "6b6c7b4ac4239bfeafda192fa022537f2c1d103d4cf652542ac5af3149545225"
+  },
+  {
+    "file": "screenshots/03-gameplay-1200x600.jpg",
+    "width": 1200,
+    "height": 600,
+    "format": "JPEG",
+    "bytes": 60113,
+    "sha256": "7c664375147e9a3b72abb6a00ba962446b262da76030241e2af83319e3cbe595"
+  }
+]

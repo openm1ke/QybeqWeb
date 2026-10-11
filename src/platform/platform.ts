@@ -8,7 +8,7 @@
 export type RewardedResult = 'rewarded' | 'dismissed' | 'unavailable' | 'failed'
 
 export interface Platform {
-  readonly id: 'web' | 'yandex'
+  readonly id: 'web' | 'yandex' | 'vk'
   /** Starts the platform; the game renders once this settles. */
   init(): Promise<void>
   /** The player's language as the platform reports it (ISO 639-1). */

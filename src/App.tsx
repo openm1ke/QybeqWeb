@@ -18,7 +18,7 @@ import './App.css'
 type Screen = 'menu' | 'game' | 'customize' | 'settings' | 'howto'
 
 /** Analytics and links to the privacy policy: the open web build only. */
-const webExtras = import.meta.env.VITE_PLATFORM !== 'yandex'
+const webExtras = import.meta.env.VITE_PLATFORM !== 'yandex' && import.meta.env.VITE_PLATFORM !== 'vk'
 
 export default function App() {
   const [screen, setScreen] = useState<Screen>('menu')

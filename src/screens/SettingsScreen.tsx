@@ -7,7 +7,7 @@ import '../game.css'
 
 /** Settings in the mobile layout: titled plates of rows (`SettingsScreen`). */
 /** Analytics and the privacy policy: the open web build only. */
-const webExtras = import.meta.env.VITE_PLATFORM !== 'yandex'
+const webExtras = import.meta.env.VITE_PLATFORM !== 'yandex' && import.meta.env.VITE_PLATFORM !== 'vk'
 
 export function SettingsScreen({ settings, text, language, analyticsEnabled, appearanceDetail, onChange, onLanguage, onAnalyticsChange, onCustomize, onBack }: {
   settings: AudioSettings

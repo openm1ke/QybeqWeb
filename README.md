@@ -36,11 +36,18 @@ npm run dev
 npm run build            # the website (GitHub Pages) → dist/
 npm run build:yandex     # the Yandex Games archive → release/qybeq-yandex-games-<version>.zip
 npm run dev:yandex       # the Yandex build locally, with a stand-in for the SDK
+npm run build:vk         # the VK Games build → dist-vk/
+npm run dev:vk           # the VK-targeted build locally; VK Bridge activates inside VK
 ```
 
 The website deploys on every push to `main`; the Yandex Games archive is
 built on demand (locally or with the "Yandex Games archive" workflow) and
-uploaded in the developer console. See `docs/YANDEX_GAMES.md`.
+uploaded in the developer console. The Pages deployment also publishes the VK
+build under `/vk/`; upload the contents of `dist-vk/` to VK Games when creating
+the VK listing. The VK build uses VK Bridge, VK Storage and rewarded native ads
+for the game's extra-hint flow. The current VK app ID is configured as
+`VITE_VK_APP_ID=54815710` in `.env.vk`. See `docs/YANDEX_GAMES.md` and
+`docs/vk/README.md`.
 
 ## Verify
 

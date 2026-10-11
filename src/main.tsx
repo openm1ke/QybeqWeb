@@ -9,7 +9,7 @@ const RenderLab = import.meta.env.DEV && new URLSearchParams(location.search).ha
   ? lazy(() => import('./dev/RenderLab').then((module) => ({ default: module.RenderLab })))
   : null
 
-// The platform starts first (on Yandex Games: the SDK, its language and
+// The platform starts first (on Yandex Games and VK: SDK language and
 // storage); the game renders either way.
 void platform.init().catch(() => undefined).then(() => {
   createRoot(document.getElementById('root')!).render(

@@ -18,6 +18,7 @@ jobs:
       - run: npm run build
       # The Yandex Games archive builds and passes its archive checks too.
       - run: npm run build:yandex
+      - run: npm run build:vk
   browser-smoke:
     runs-on: ubuntu-latest
     steps:

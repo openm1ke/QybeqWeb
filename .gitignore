@@ -13,6 +13,8 @@ dist-ssr
 *.local
 test-results
 playwright-report
+.playwright-cli
+output/playwright
 coverage
 
 # Editor directories and files
@@ -28,4 +30,5 @@ coverage
 
 # Yandex Games build and archives
 dist-yandex
+dist-vk
 release
