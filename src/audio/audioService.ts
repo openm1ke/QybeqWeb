@@ -26,10 +26,10 @@ export function loadAudioSettings(): AudioSettings {
     return {
       musicEnabled: value.musicEnabled ?? true,
       effectsEnabled: value.effectsEnabled ?? true,
-      musicVolume: typeof value.musicVolume === 'number' ? Math.max(0, Math.min(1, value.musicVolume)) : .5,
+      musicVolume: typeof value.musicVolume === 'number' ? Math.max(0, Math.min(1, value.musicVolume)) : .1,
     }
   } catch {
-    return { musicEnabled: true, effectsEnabled: true, musicVolume: .5 }
+    return { musicEnabled: true, effectsEnabled: true, musicVolume: .1 }
   }
 }
 
@@ -56,6 +56,7 @@ class WebGameAudio {
   private music: AudioBufferSourceNode | null = null
   private musicToken = 0
   private trackIndex = 0
+  private menuOpen = false
   private visible = typeof document === 'undefined' || !document.hidden
 
   constructor() {
@@ -77,6 +78,12 @@ class WebGameAudio {
 
   configure(settings: AudioSettings): void {
     this.settings = settings
+    this.sync()
+  }
+
+  /** Keeps the background music silent while an in-game sheet is open. */
+  setMenuOpen(open: boolean): void {
+    this.menuOpen = open
     this.sync()
   }
 
@@ -103,7 +110,7 @@ class WebGameAudio {
   }
 
   private get audible(): boolean {
-    return this.visible && !platform.paused
+    return this.visible && !platform.paused && !this.menuOpen
   }
 
   private sync(): void {

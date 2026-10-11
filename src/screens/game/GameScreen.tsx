@@ -200,6 +200,11 @@ export function GameScreen({ text, source: initialSource, resume = false, onComp
   const solved = level !== emptyLevel && isSolved(snapshot)
   const interactive = phase === 'play' && !solved && menu == null
 
+  useEffect(() => {
+    gameAudio.setMenuOpen(menu !== null)
+    return () => gameAudio.setMenuOpen(false)
+  }, [menu])
+
   // ---- Layout --------------------------------------------------------------
 
   useLayoutEffect(() => {
